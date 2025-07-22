@@ -1968,14 +1968,16 @@ int rts51x_xd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip,
 	}
 
 	RTS51X_DEBUGP("old_blk = 0x%x\n", old_blk);
-	if (srb->sc_data_direction == DMA_TO_DEVICE)
+	if (srb->sc_data_direction == DMA_TO_DEVICE) {
 		RTS51X_DEBUGP("new_blk = 0x%x\n", new_blk);
+	}
 
 	while (total_sec_cnt) {
 		if ((start_page + total_sec_cnt) > (xd_card->page_off + 1))
 			end_page = xd_card->page_off + 1;
 		else
 			end_page = start_page + (u8) total_sec_cnt;
+
 		page_cnt = end_page - start_page;
 		if (srb->sc_data_direction == DMA_FROM_DEVICE) {
 			retval = xd_read_multiple_pages(chip, old_blk, log_blk,

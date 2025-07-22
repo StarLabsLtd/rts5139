@@ -117,21 +117,22 @@ extern struct usb_driver rts51x_driver;
 
 static inline void get_current_time(u8 *timeval_buf, int buf_len)
 {
-	struct timeval tv;
+	struct timespec64 tv;
 
 	if (!timeval_buf || (buf_len < 8))
 		return;
 
-	do_gettimeofday(&tv);
+	ktime_get_real_ts64(&tv);
 
+	u32 usec = tv.tv_nsec / 1000;
 	timeval_buf[0] = (u8) (tv.tv_sec >> 24);
 	timeval_buf[1] = (u8) (tv.tv_sec >> 16);
 	timeval_buf[2] = (u8) (tv.tv_sec >> 8);
 	timeval_buf[3] = (u8) (tv.tv_sec);
-	timeval_buf[4] = (u8) (tv.tv_usec >> 24);
-	timeval_buf[5] = (u8) (tv.tv_usec >> 16);
-	timeval_buf[6] = (u8) (tv.tv_usec >> 8);
-	timeval_buf[7] = (u8) (tv.tv_usec);
+	timeval_buf[4] = (u8) (usec >> 24);
+	timeval_buf[5] = (u8) (usec >> 16);
+	timeval_buf[6] = (u8) (usec >> 8);
+	timeval_buf[7] = (u8) (usec);
 }
 
 #define SND_CTRL_PIPE(chip)	((chip)->usb->send_ctrl_pipe)
@@ -146,9 +147,9 @@ static inline void get_current_time(u8 *timeval_buf, int buf_len)
 #define scsi_lock(host)		spin_lock_irq(host->host_lock)
 
 #define GET_PM_USAGE_CNT(chip)	\
-	atomic_read(&((chip)->usb->pusb_intf->pm_usage_cnt))
+	atomic_read(&((chip)->usb->pusb_intf->dev.power.usage_count))
 #define SET_PM_USAGE_CNT(chip, cnt)	\
-	atomic_set(&((chip)->usb->pusb_intf->pm_usage_cnt), (cnt))
+	atomic_set(&((chip)->usb->pusb_intf->dev.power.usage_count), (cnt))
 
 /* Compatible macros while we switch over */
 static inline void *usb_buffer_alloc(struct usb_device *dev, size_t size,

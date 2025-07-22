@@ -1552,10 +1552,11 @@ static int sd_tuning_rx(struct rts51x_chip *chip)
 			}
 
 			retval = tuning_cmd(chip, (u8) j);
-			if (retval == STATUS_SUCCESS)
+			if (retval == STATUS_SUCCESS) {
 				raw_phase_map[i] |= 1 << j;
-			else
+			} else {
 				RTS51X_DEBUGP("Tuning phase %d fail\n", j);
+			}
 		}
 	}
 
@@ -1650,10 +1651,11 @@ static int sd_tuning_tx(struct rts51x_chip *chip)
 			}
 
 			retval = tuning_cmd(chip, (u8) j);
-			if (retval == STATUS_SUCCESS)
+			if (retval == STATUS_SUCCESS) {
 				raw_phase_map[i] |= 1 << j;
-			else
+			} else {
 				RTS51X_DEBUGP("Tuning phase %d fail\n", j);
+			}
 		}
 	}
 

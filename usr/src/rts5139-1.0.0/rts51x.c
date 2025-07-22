@@ -99,13 +99,13 @@ static struct usb_class_driver rts51x_class = {
 
 static inline void usb_autopm_enable(struct usb_interface *intf)
 {
-	atomic_set(&intf->pm_usage_cnt, 1);
+	atomic_set(&intf->dev.power.usage_count, 1);
 	usb_autopm_put_interface(intf);
 }
 
 static inline void usb_autopm_disable(struct usb_interface *intf)
 {
-	atomic_set(&intf->pm_usage_cnt, 0);
+	atomic_set(&intf->dev.power.usage_count, 0);
 	usb_autopm_get_interface(intf);
 }
 
@@ -292,14 +292,14 @@ static int rts51x_control_thread(void *__chip)
 		 * the maximum known LUN
 		 */
 		else if (chip->srb->device->id) {
-			pr_debug("Bad target number (%d:%d)\n",
+			pr_debug("Bad target number (%u:%llu)\n",
 				 chip->srb->device->id,
 				 chip->srb->device->lun);
 			chip->srb->result = DID_BAD_TARGET << 16;
 		}
 
 		else if (chip->srb->device->lun > chip->max_lun) {
-			pr_debug("Bad LUN (%d:%d)\n",
+			pr_debug("Bad LUN (%u:%llu)\n",
 				 chip->srb->device->id,
 				 chip->srb->device->lun);
 			chip->srb->result = DID_BAD_TARGET << 16;
@@ -316,7 +316,7 @@ static int rts51x_control_thread(void *__chip)
 
 		/* indicate that the command is done */
 		if (chip->srb->result != DID_ABORT << 16)
-			chip->srb->scsi_done(chip->srb);
+			scsi_done(chip->srb);
 		else
 abort :
 			pr_debug("scsi command aborted\n");
@@ -821,7 +821,7 @@ static void rts51x_disconnect(struct usb_interface *intf)
  * Initialization and registration
  ***********************************************************************/
 
-static struct usb_device_id rts5139_usb_ids[] = {
+struct usb_device_id rts5139_usb_ids[] = {
 	{USB_DEVICE(0x0BDA, 0x0139)},
 	{USB_DEVICE(0x0BDA, 0x0129)},
 	{}			/* Terminating entry */

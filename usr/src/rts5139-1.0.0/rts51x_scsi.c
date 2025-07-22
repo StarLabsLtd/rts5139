@@ -323,8 +323,9 @@ void rts51x_scsi_show_command(struct scsi_cmnd *srb)
 		break;
 	}
 
-	if (srb->cmnd[0] != TEST_UNIT_READY)
+	if (srb->cmnd[0] != TEST_UNIT_READY) {
 		RTS51X_DEBUGP("Command %s (%d bytes)\n", what, srb->cmd_len);
+	}
 	if (unknown_cmd) {
 		RTS51X_DEBUGP("");
 		for (i = 0; i < srb->cmd_len && i < 16; i++)
@@ -1535,10 +1536,10 @@ static int get_ms_information(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 	buf[i++] = 0x80;
 	if ((dev_info_id == 0x10) || (dev_info_id == 0x13)) {
 		/* System Information */
-		memcpy(buf + i, ms_card->raw_sys_info, 96);
+		memcpy(buf + i, ms_card->raw_sys_info, sizeof(ms_card->raw_sys_info));
 	} else {
 		/* Model Name */
-		memcpy(buf + i, ms_card->raw_model_name, 48);
+		memcpy(buf + i, ms_card->raw_model_name, sizeof(ms_card->raw_model_name));
 	}
 
 	rts51x_set_xfer_buf(buf, buf_len, srb);
@@ -1919,7 +1920,7 @@ int rts51x_scsi_handler(struct scsi_cmnd *srb, struct rts51x_chip *chip)
  * Host functions
  ***********************************************************************/
 
-int slave_alloc(struct scsi_device *sdev)
+static int sdev_init(struct scsi_device *sdev)
 {
 	/*
 	 * Set the INQUIRY transfer length to 36.  We don't use any of
@@ -1930,18 +1931,8 @@ int slave_alloc(struct scsi_device *sdev)
 	return 0;
 }
 
-int slave_configure(struct scsi_device *sdev)
+static int sdev_configure(struct scsi_device *sdev, struct queue_limits *limits)
 {
-	/* Scatter-gather buffers (all but the last) must have a length
-	 * divisible by the bulk maxpacket size.  Otherwise a data packet
-	 * would end up being short, causing a premature end to the data
-	 * transfer.  Since high-speed bulk pipes have a maxpacket size
-	 * of 512, we'll use that as the scsi device queue's DMA alignment
-	 * mask.  Guaranteeing proper alignment of the first buffer will
-	 * have the desired effect because, except at the beginning and
-	 * the end, scatter-gather buffers follow page boundaries. */
-	blk_queue_dma_alignment(sdev->request_queue, (512 - 1));
-
 	/* Set the SCSI level to at least 2.  We'll leave it at 3 if that's
 	 * what is originally reported.  We need this to avoid confusing
 	 * the SCSI layer with devices that report 0 or 1, but need 10-byte
@@ -1990,8 +1981,9 @@ static int show_info(struct seq_file *m, struct Scsi_Host *host)
 
 /* queue a command */
 /* This is always called with scsi_lock(host) held */
-static int queuecommand_lck(struct scsi_cmnd *srb, void (*done) (struct scsi_cmnd *))
+static int queuecommand_lck(struct scsi_cmnd *srb)
 {
+	void (*done)(struct scsi_cmnd *) = scsi_done;
 	struct rts51x_chip *chip = host_to_rts51x(srb->device->host);
 
 	/* check for state-transition errors */
@@ -2010,7 +2002,6 @@ static int queuecommand_lck(struct scsi_cmnd *srb, void (*done) (struct scsi_cmn
 	}
 
 	/* enqueue the command and wake up the control thread */
-	srb->scsi_done = done;
 	chip->srb = srb;
 	complete(&chip->usb->cmnd_ready);
 
@@ -2105,8 +2096,8 @@ struct scsi_host_template rts51x_host_template = {
 	/* unknown initiator id */
 	.this_id = -1,
 
-	.slave_alloc = slave_alloc,
-	.slave_configure = slave_configure,
+	.sdev_init = sdev_init,
+	.sdev_configure = sdev_configure,
 
 	/* lots of sg segments can be handled */
 	.sg_tablesize = SG_ALL,
@@ -2114,11 +2105,15 @@ struct scsi_host_template rts51x_host_template = {
 	/* limit the total size of a transfer to 120 KB */
 	.max_sectors = 240,
 
-	/* merge commands... this seems to help performance, but
-	 * periodically someone should test to see which setting is more
-	 * optimal.
-	 */
-	.use_clustering = 1,
+	/* Scatter-gather buffers (all but the last) must have a length
+	 * divisible by the bulk maxpacket size.  Otherwise a data packet
+	 * would end up being short, causing a premature end to the data
+	 * transfer.  Since high-speed bulk pipes have a maxpacket size
+	 * of 512, we'll use that as the scsi device queue's DMA alignment
+	 * mask.  Guaranteeing proper alignment of the first buffer will
+	 * have the desired effect because, except at the beginning and
+	 * the end, scatter-gather buffers follow page boundaries. */
+	.dma_alignment = 511, // 512 - 1
 
 	/* emulated HBA */
 	.emulated = 1,
