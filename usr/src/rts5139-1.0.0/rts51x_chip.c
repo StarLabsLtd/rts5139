@@ -44,7 +44,8 @@ static int check_sd_speed_prior(u32 sd_speed_prior)
 
 	/* Check the legality of sd_speed_prior */
 	for (i = 0; i < 4; i++) {
-		u8 tmp = (u8) (sd_speed_prior >> (i * 8));
+		u8 tmp = (u8)(sd_speed_prior >> (i * 8));
+
 		if ((tmp < 0x01) || (tmp > 0x04)) {
 			fake_para = 1;
 			break;
@@ -95,11 +96,11 @@ int rts51x_reset_chip(struct rts51x_chip *chip)
 	if (chip->option.sd_ctl & SUPPORT_UHS50_MMC44) {
 		SET_UHS50(chip);
 		RTS51X_DEBUGP("option enable UHS50&MMC44,sd_ctl:0x%x\n",
-			chip->option.sd_ctl);
+			      chip->option.sd_ctl);
 	} else {
 		/* if(CHECK_PID(chip, 0x0139)&&CHECK_PKG(chip, LQFP48)) */
-		if ((CHECK_PID(chip, 0x0139) && CHECK_PKG(chip, LQFP48))
-		    || chip->rts5179) {
+		if ((CHECK_PID(chip, 0x0139) && CHECK_PKG(chip, LQFP48)) ||
+		    chip->rts5179) {
 			SET_UHS50(chip);
 			RTS51X_DEBUGP("PID enable UHS50&MMC44\n");
 		} else {
@@ -175,7 +176,7 @@ int rts51x_init_chip(struct rts51x_chip *chip)
 	if (!check_sd_speed_prior(chip->option.sd_speed_prior))
 		chip->option.sd_speed_prior = 0x01020403;
 	RTS51X_DEBUGP("sd_speed_prior = 0x%08x\n",
-		       chip->option.sd_speed_prior);
+		      chip->option.sd_speed_prior);
 
 	RTS51X_READ_REG(chip, CARD_SHARE_MODE, &val);
 	if (val & CARD_SHARE_LQFP_SEL) {
@@ -235,13 +236,13 @@ static inline void rts51x_blink_led(struct rts51x_chip *chip)
 static void rts51x_auto_delink_cmd(struct rts51x_chip *chip)
 {
 	rts51x_write_register(chip, AUTO_DELINK_EN,
-			AUTO_DELINK, AUTO_DELINK);
+			      AUTO_DELINK, AUTO_DELINK);
 }
 
 static void rts51x_auto_delink_force_cmd(struct rts51x_chip *chip)
 {
 	rts51x_write_register(chip, AUTO_DELINK_EN,
-			AUTO_DELINK | FORCE_DELINK,
+			      AUTO_DELINK | FORCE_DELINK,
 			AUTO_DELINK | FORCE_DELINK);
 }
 
@@ -258,8 +259,7 @@ static void rts51x_auto_delink_polling_cycle(struct rts51x_chip *chip)
 				if (!chip->card_ejected) {
 					/* if card is not ejected or safely
 					 * remove,then do force delink */
-					RTS51X_DEBUGP("False card inserted,"
-							"do force delink\n");
+					RTS51X_DEBUGP("False card inserted,do force delink\n");
 					rts51x_auto_delink_force_cmd(chip);
 					chip->auto_delink_counter =
 					    chip->option.delink_delay * 2 + 1;
@@ -293,14 +293,12 @@ static void rts51x_auto_delink(struct rts51x_chip *chip)
 
 void rts51x_polling_func(struct rts51x_chip *chip)
 {
-
 	rts51x_init_cards(chip);
 
 #ifdef SUPPORT_OCP
 	/* if OCP happen and card exist, then close card OE */
 	if ((chip->ocp_stat & (MS_OCP_NOW | MS_OCP_EVER)) &&
-			(chip->card_exist)) {
-
+	    (chip->card_exist)) {
 		rts51x_prepare_run(chip);
 
 		if (chip->card_exist & SD_CARD)
@@ -321,10 +319,10 @@ void rts51x_polling_func(struct rts51x_chip *chip)
 			chip->led_toggle_counter = 0;
 			/* Idle state, turn off LED
 			 * to reduce power consumption */
-			if (chip->option.led_always_on
-			    && (chip->card_exist &
-				(SD_CARD | MS_CARD | XD_CARD))
-			    && (!chip->card_ejected)) {
+			if (chip->option.led_always_on &&
+			    (chip->card_exist &
+				(SD_CARD | MS_CARD | XD_CARD)) &&
+			    (!chip->card_ejected)) {
 				rts51x_turn_on_led(chip, LED_GPIO);
 			} else {
 				if (chip->rts5179) {
@@ -334,7 +332,6 @@ void rts51x_polling_func(struct rts51x_chip *chip)
 				} else {
 					rts51x_turn_off_led(chip, LED_GPIO);
 				}
-
 			}
 
 #ifdef CLOSE_SSC_POWER
@@ -377,8 +374,8 @@ void rts51x_add_cmd(struct rts51x_chip *chip,
 	if (chip->cmd_idx < ((CMD_BUF_LEN - CMD_OFFSET) / 4)) {
 		i = CMD_OFFSET + chip->cmd_idx * 4;
 		chip->cmd_buf[i++] =
-		    ((cmd_type & 0x03) << 6) | (u8) ((reg_addr >> 8) & 0x3F);
-		chip->cmd_buf[i++] = (u8) reg_addr;
+		    ((cmd_type & 0x03) << 6) | (u8)((reg_addr >> 8) & 0x3F);
+		chip->cmd_buf[i++] = (u8)reg_addr;
 		chip->cmd_buf[i++] = mask;
 		chip->cmd_buf[i++] = data;
 		chip->cmd_idx++;
@@ -389,8 +386,8 @@ int rts51x_send_cmd(struct rts51x_chip *chip, u8 flag, int timeout)
 {
 	int result;
 
-	chip->cmd_buf[CNT_H] = (u8) (chip->cmd_idx >> 8);
-	chip->cmd_buf[CNT_L] = (u8) (chip->cmd_idx);
+	chip->cmd_buf[CNT_H] = (u8)(chip->cmd_idx >> 8);
+	chip->cmd_buf[CNT_L] = (u8)(chip->cmd_idx);
 	chip->cmd_buf[STAGE_FLAG] = flag;
 
 	result = rts51x_transfer_data_rcc(chip, SND_BULK_PIPE(chip),
@@ -487,10 +484,10 @@ int rts51x_ep0_write_register(struct rts51x_chip *chip, u16 addr, u8 mask,
 	int retval;
 	u16 value = 0, index = 0;
 
-	value |= (u16) (3 & 0x03) << 14;
-	value |= (u16) (addr & 0x3FFF);
-	index |= (u16) mask << 8;
-	index |= (u16) data;
+	value |= (u16)(3 & 0x03) << 14;
+	value |= (u16)(addr & 0x3FFF);
+	index |= (u16)mask << 8;
+	index |= (u16)data;
 
 	retval = rts51x_ctrl_transfer(chip, SND_CTRL_PIPE(chip), 0x00, 0x40,
 				      cpu_to_be16(value), cpu_to_be16(index),
@@ -510,8 +507,8 @@ int rts51x_ep0_read_register(struct rts51x_chip *chip, u16 addr, u8 *data)
 	if (data)
 		*data = 0;
 
-	value |= (u16) (2 & 0x03) << 14;
-	value |= (u16) (addr & 0x3FFF);
+	value |= (u16)(2 & 0x03) << 14;
+	value |= (u16)(addr & 0x3FFF);
 
 	retval = rts51x_ctrl_transfer(chip, RCV_CTRL_PIPE(chip), 0x00, 0xC0,
 				      cpu_to_be16(value), 0, &val, 1, 100);
@@ -544,11 +541,11 @@ int rts51x_seq_write_register(struct rts51x_chip *chip, u16 addr, u16 len,
 	chip->cmd_buf[2] = 'C';
 	chip->cmd_buf[3] = 'R';
 	chip->cmd_buf[PACKET_TYPE] = SEQ_WRITE;
-	chip->cmd_buf[5] = (u8) (len >> 8);
-	chip->cmd_buf[6] = (u8) len;
+	chip->cmd_buf[5] = (u8)(len >> 8);
+	chip->cmd_buf[6] = (u8)len;
 	chip->cmd_buf[STAGE_FLAG] = 0;
-	chip->cmd_buf[8] = (u8) (addr >> 8);
-	chip->cmd_buf[9] = (u8) addr;
+	chip->cmd_buf[8] = (u8)(addr >> 8);
+	chip->cmd_buf[9] = (u8)addr;
 
 	memcpy(chip->cmd_buf + 12, data, len);
 
@@ -580,11 +577,11 @@ int rts51x_seq_read_register(struct rts51x_chip *chip, u16 addr, u16 len,
 	chip->cmd_buf[2] = 'C';
 	chip->cmd_buf[3] = 'R';
 	chip->cmd_buf[PACKET_TYPE] = SEQ_READ;
-	chip->cmd_buf[5] = (u8) (rsp_len >> 8);
-	chip->cmd_buf[6] = (u8) rsp_len;
+	chip->cmd_buf[5] = (u8)(rsp_len >> 8);
+	chip->cmd_buf[6] = (u8)rsp_len;
 	chip->cmd_buf[STAGE_FLAG] = STAGE_R;
-	chip->cmd_buf[8] = (u8) (addr >> 8);
-	chip->cmd_buf[9] = (u8) addr;
+	chip->cmd_buf[8] = (u8)(addr >> 8);
+	chip->cmd_buf[9] = (u8)addr;
 
 	result = rts51x_transfer_data_rcc(chip, SND_BULK_PIPE(chip),
 					  (void *)(chip->cmd_buf), 12, 0, NULL,
@@ -609,7 +606,7 @@ int rts51x_read_ppbuf(struct rts51x_chip *chip, u8 *buf, int buf_len)
 		TRACE_RET(chip, STATUS_ERROR);
 
 	retval =
-	    rts51x_seq_read_register(chip, PPBUF_BASE2, (u16) buf_len, buf);
+	    rts51x_seq_read_register(chip, PPBUF_BASE2, (u16)buf_len, buf);
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 
@@ -624,7 +621,7 @@ int rts51x_write_ppbuf(struct rts51x_chip *chip, u8 *buf, int buf_len)
 		TRACE_RET(chip, STATUS_ERROR);
 
 	retval =
-	    rts51x_seq_write_register(chip, PPBUF_BASE2, (u16) buf_len, buf);
+	    rts51x_seq_write_register(chip, PPBUF_BASE2, (u16)buf_len, buf);
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 
@@ -761,10 +758,10 @@ void rts51x_trace_msg(struct rts51x_chip *chip, unsigned char *buf, int clear)
 		msg_cnt = TRACE_ITEM_CNT;
 	else
 		msg_cnt = chip->msg_idx;
-	*(ptr++) = (u8) (msg_cnt >> 24);
-	*(ptr++) = (u8) (msg_cnt >> 16);
-	*(ptr++) = (u8) (msg_cnt >> 8);
-	*(ptr++) = (u8) msg_cnt;
+	*(ptr++) = (u8)(msg_cnt >> 24);
+	*(ptr++) = (u8)(msg_cnt >> 16);
+	*(ptr++) = (u8)(msg_cnt >> 8);
+	*(ptr++) = (u8)msg_cnt;
 	RTS51X_DEBUGP("Trace message count is %d\n", msg_cnt);
 
 	for (i = 1; i <= msg_cnt; i++) {
@@ -774,8 +771,8 @@ void rts51x_trace_msg(struct rts51x_chip *chip, unsigned char *buf, int clear)
 		if (idx < 0)
 			idx += TRACE_ITEM_CNT;
 
-		*(ptr++) = (u8) (chip->trace_msg[idx].line >> 8);
-		*(ptr++) = (u8) (chip->trace_msg[idx].line);
+		*(ptr++) = (u8)(chip->trace_msg[idx].line >> 8);
+		*(ptr++) = (u8)(chip->trace_msg[idx].line);
 		for (j = 0; j < MSG_FUNC_LEN; j++)
 			*(ptr++) = chip->trace_msg[idx].func[j];
 		for (j = 0; j < MSG_FILE_LEN; j++)
@@ -795,8 +792,8 @@ void rts51x_trace_msg(struct rts51x_chip *chip, unsigned char *buf, int clear)
 void rts51x_pp_status(struct rts51x_chip *chip, unsigned int lun, u8 *status,
 		      u8 status_len)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct sd_info *sd_card = &chip->sd_card;
+	struct ms_info *ms_card = &chip->ms_card;
 	u8 card = rts51x_get_lun_card(chip, lun);
 #ifdef SUPPORT_OC
 	u8 oc_now_mask = 0, oc_ever_mask = 0;
@@ -805,8 +802,8 @@ void rts51x_pp_status(struct rts51x_chip *chip, unsigned int lun, u8 *status,
 	if (!status || (status_len < 32))
 		return;
 	/* IC Version */
-	status[0] = (u8) RTS51X_GET_PID(chip);
-	status[1] = (u8) (chip->ic_version);
+	status[0] = (u8)RTS51X_GET_PID(chip);
+	status[1] = (u8)(chip->ic_version);
 
 	/* Auto delink mode */
 	if (chip->option.auto_delink_en)
@@ -908,15 +905,15 @@ void rts51x_read_status(struct rts51x_chip *chip, unsigned int lun,
 	if (!rts51x_status || (status_len < 16))
 		return;
 	/* VID */
-	rts51x_status[0] = (u8) (RTS51X_GET_VID(chip) >> 8);
-	rts51x_status[1] = (u8) RTS51X_GET_VID(chip);
+	rts51x_status[0] = (u8)(RTS51X_GET_VID(chip) >> 8);
+	rts51x_status[1] = (u8)RTS51X_GET_VID(chip);
 
 	/* PID */
-	rts51x_status[2] = (u8) (RTS51X_GET_PID(chip) >> 8);
-	rts51x_status[3] = (u8) RTS51X_GET_PID(chip);
+	rts51x_status[2] = (u8)(RTS51X_GET_PID(chip) >> 8);
+	rts51x_status[3] = (u8)RTS51X_GET_PID(chip);
 
 	/* gbLUN */
-	rts51x_status[4] = (u8) lun;
+	rts51x_status[4] = (u8)lun;
 
 	/* Lun Card Number */
 	if (chip->card_exist) {
@@ -936,7 +933,7 @@ void rts51x_read_status(struct rts51x_chip *chip, unsigned int lun,
 	rts51x_status[6] = 1;
 
 	/* IC Version */
-	rts51x_status[7] = (u8) RTS51X_GET_PID(chip);
+	rts51x_status[7] = (u8)RTS51X_GET_PID(chip);
 	rts51x_status[8] = chip->ic_version;
 
 	/* Physical Exist */
@@ -961,7 +958,7 @@ void rts51x_read_status(struct rts51x_chip *chip, unsigned int lun,
 	if (rts51x_get_lun_card(chip, lun) == XD_CARD) {
 		rts51x_status[13] = 0x40;
 	} else if (rts51x_get_lun_card(chip, lun) == SD_CARD) {
-		struct sd_info *sd_card = &(chip->sd_card);
+		struct sd_info *sd_card = &chip->sd_card;
 
 		rts51x_status[13] = 0x20;
 		if (CHK_SD(sd_card)) {
@@ -977,7 +974,7 @@ void rts51x_read_status(struct rts51x_chip *chip, unsigned int lun,
 				rts51x_status[13] |= 0x04; /* Hi capacity */
 		}
 	} else if (rts51x_get_lun_card(chip, lun) == MS_CARD) {
-		struct ms_info *ms_card = &(chip->ms_card);
+		struct ms_info *ms_card = &chip->ms_card;
 
 		if (CHK_MSPRO(ms_card)) {
 			rts51x_status[13] = 0x38; /* MS Pro */
@@ -1010,5 +1007,4 @@ int rts51x_transfer_data_rcc(struct rts51x_chip *chip, unsigned int pipe,
 				 timeout);
 
 	return retval;
-
 }

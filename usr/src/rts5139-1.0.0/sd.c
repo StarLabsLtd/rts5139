@@ -37,42 +37,42 @@
 
 static inline void sd_set_reset_fail(struct rts51x_chip *chip, u8 err_code)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	sd_card->sd_reset_fail |= err_code;
 }
 
 static inline void sd_clear_reset_fail(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	sd_card->sd_reset_fail = 0;
 }
 
 static inline int sd_check_reset_fail(struct rts51x_chip *chip, u8 err_code)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	return sd_card->sd_reset_fail & err_code;
 }
 
 static inline void sd_set_err_code(struct rts51x_chip *chip, u8 err_code)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	sd_card->err_code |= err_code;
 }
 
 static inline void sd_clr_err_code(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	sd_card->err_code = 0;
 }
 
 static inline int sd_check_err_code(struct rts51x_chip *chip, u8 err_code)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	return sd_card->err_code & err_code;
 }
@@ -101,7 +101,7 @@ int sd_check_data0_status(struct rts51x_chip *chip)
 static int sd_send_cmd_get_rsp(struct rts51x_chip *chip, u8 cmd_idx,
 			       u32 arg, u8 rsp_type, u8 *rsp, int rsp_len)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int timeout = 50;
 	u16 reg_addr;
@@ -121,10 +121,10 @@ RTY_SEND_CMD:
 	rts51x_init_cmd(chip);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD0, 0xFF, 0x40 | cmd_idx);
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF, (u8) (arg >> 24));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF, (u8) (arg >> 16));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF, (u8) (arg >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8) arg);
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF, (u8)(arg >> 24));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF, (u8)(arg >> 16));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF, (u8)(arg >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8)arg);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG2, 0xFF, rsp_type);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
@@ -210,7 +210,7 @@ RTY_SEND_CMD:
 			len = 5;
 		}
 		retval = rts51x_seq_read_register(chip, reg_addr,
-						     (unsigned short)len, buf);
+						  (unsigned short)len, buf);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
 	}
@@ -240,8 +240,8 @@ RTY_SEND_CMD:
 	}
 	/* Check Status */
 	if ((rsp_type == SD_RSP_TYPE_R1) || (rsp_type == SD_RSP_TYPE_R1b)) {
-		if ((cmd_idx != SEND_RELATIVE_ADDR)
-		    && (cmd_idx != SEND_IF_COND)) {
+		if ((cmd_idx != SEND_RELATIVE_ADDR) &&
+		    (cmd_idx != SEND_IF_COND)) {
 			if (cmd_idx != STOP_TRANSMISSION) {
 				if (buf[1] & 0x80)
 					TRACE_RET(chip, STATUS_FAIL);
@@ -291,7 +291,7 @@ int sd_read_data(struct rts51x_chip *chip, u8 trans_mode, u8 *cmd, int cmd_len,
 		 u16 byte_cnt, u16 blk_cnt, u8 bus_width, u8 *buf, int buf_len,
 		 int timeout)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i;
 
@@ -313,12 +313,12 @@ int sd_read_data(struct rts51x_chip *chip, u8 trans_mode, u8 *cmd, int cmd_len,
 				       cmd[i]);
 		}
 	}
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, (u8) byte_cnt);
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, (u8)byte_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-		       (u8) (byte_cnt >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF, (u8) blk_cnt);
+		       (u8)(byte_cnt >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF, (u8)blk_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-		       (u8) (blk_cnt >> 8));
+		       (u8)(blk_cnt >> 8));
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG1, 0x03, bus_width);
 
@@ -363,7 +363,7 @@ static int sd_write_data(struct rts51x_chip *chip, u8 trans_mode,
 			 u8 *cmd, int cmd_len, u16 byte_cnt, u16 blk_cnt,
 			 u8 bus_width, u8 *buf, int buf_len, int timeout)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i;
 
@@ -391,12 +391,12 @@ static int sd_write_data(struct rts51x_chip *chip, u8 trans_mode,
 				       cmd[i]);
 		}
 	}
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, (u8) byte_cnt);
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, (u8)byte_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-		       (u8) (byte_cnt >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF, (u8) blk_cnt);
+		       (u8)(byte_cnt >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF, (u8)blk_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-		       (u8) (blk_cnt >> 8));
+		       (u8)(blk_cnt >> 8));
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG1, 0x03, bus_width);
 
@@ -438,7 +438,7 @@ static int sd_write_data(struct rts51x_chip *chip, u8 trans_mode,
 
 static int sd_check_csd(struct rts51x_chip *chip, char check_wp)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i;
 	u8 csd_ver, trans_speed;
@@ -517,21 +517,22 @@ static int sd_check_csd(struct rts51x_chip *chip, char check_wp)
 			/* Get READ_BL_LEN */
 			blk_size = rsp[6] & 0x0F;
 			/* Get C_SIZE */
-			c_size = ((u16) (rsp[7] & 0x03) << 10)
-			    + ((u16) rsp[8] << 2)
-			    + ((u16) (rsp[9] & 0xC0) >> 6);
+			c_size = ((u16)(rsp[7] & 0x03) << 10)
+			    + ((u16)rsp[8] << 2)
+			    + ((u16)(rsp[9] & 0xC0) >> 6);
 			/* Get C_SIZE_MUL */
-			c_size_mult = (u8) ((rsp[10] & 0x03) << 1);
+			c_size_mult = (u8)((rsp[10] & 0x03) << 1);
 			c_size_mult += (rsp[11] & 0x80) >> 7;
 			/* Calculate total Capacity  */
 			sd_card->capacity =
-			    (((u32) (c_size + 1)) *
+			    (((u32)(c_size + 1)) *
 			     (1 << (c_size_mult + 2))) << (blk_size - 9);
 		} else {
 			/* High Capacity Card and Use CSD2.0 Version */
 			u32 total_sector = 0;
-			total_sector = (((u32) rsp[8] & 0x3f) << 16) |
-			    ((u32) rsp[9] << 8) | (u32) rsp[10];
+
+			total_sector = (((u32)rsp[8] & 0x3f) << 16) |
+			    ((u32)rsp[9] << 8) | (u32) rsp[10];
 			/* Total Capacity= (C_SIZE+1) *
 			 * 512K Byte = (C_SIZE+1)K Sector,1K = 1024 Bytes */
 			sd_card->capacity = (total_sector + 1) << 10;
@@ -550,7 +551,7 @@ static int sd_check_csd(struct rts51x_chip *chip, char check_wp)
 
 static int sd_set_sample_push_timing(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	rts51x_init_cmd(chip);
@@ -625,7 +626,7 @@ static int sd_set_sample_push_timing(struct rts51x_chip *chip)
 
 static void sd_choose_proper_clock(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	if (CHK_SD_SDR104(sd_card)) {
 		if (chip->asic_code)
@@ -664,7 +665,7 @@ static void sd_choose_proper_clock(struct rts51x_chip *chip)
 
 static int sd_set_init_para(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	retval = sd_set_sample_push_timing(chip);
@@ -682,7 +683,7 @@ static int sd_set_init_para(struct rts51x_chip *chip)
 
 int rts51x_sd_select_card(struct rts51x_chip *chip, int select)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd_idx, cmd_type;
 	u32 addr;
@@ -705,21 +706,20 @@ int rts51x_sd_select_card(struct rts51x_chip *chip, int select)
 }
 
 static int sd_wait_currentstate_dataready(struct rts51x_chip *chip, u8 statechk,
-				   u8 rdychk, u16 pollingcnt)
+					  u8 rdychk, u16 pollingcnt)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 rsp[5];
 	u16 i;
 
 	for (i = 0; i < pollingcnt; i++) {
-
 		retval =
 		    sd_send_cmd_get_rsp(chip, SEND_STATUS, sd_card->sd_addr,
 					SD_RSP_TYPE_R1, rsp, 5);
 		if (retval == STATUS_SUCCESS) {
-			if (((rsp[3] & 0x1E) == statechk)
-			    && ((rsp[3] & 0x01) == rdychk)) {
+			if (((rsp[3] & 0x1E) == statechk) &&
+			    ((rsp[3] & 0x01) == rdychk)) {
 				return STATUS_SUCCESS;
 			}
 		} else {
@@ -794,7 +794,7 @@ static int sd_change_phase(struct rts51x_chip *chip, u8 sample_point,
 	int retval;
 
 	RTS51X_DEBUGP("sd_change_phase (sample_point = %d, tune_dir = %d)\n",
-		       sample_point, tune_dir);
+		      sample_point, tune_dir);
 
 	if (tune_dir == TUNE_RX) {
 		SD_VP_CTL = SD_VPCLK1_CTL;
@@ -869,7 +869,7 @@ Fail:
 
 static int sd_check_spec(struct rts51x_chip *chip, u8 bus_width)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd[5], buf[8];
 
@@ -1015,12 +1015,12 @@ static int sd_query_switch_result(struct rts51x_chip *chip, u8 func_group,
 static int sd_check_switch_mode(struct rts51x_chip *chip, u8 mode,
 				u8 func_group, u8 func_to_switch, u8 bus_width)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd[5], buf[64];
 
-	RTS51X_DEBUGP("sd_check_switch_mode (mode = %d, func_group = %d,"
-		"func_to_switch = %d)\n", mode, func_group, func_to_switch);
+	RTS51X_DEBUGP("sd_check_switch_mode (mode = %d, func_group = %d,func_to_switch = %d)\n",
+		mode, func_group, func_to_switch);
 
 	cmd[0] = 0x40 | SWITCH;
 	cmd[1] = mode;
@@ -1094,7 +1094,7 @@ static int sd_check_switch(struct rts51x_chip *chip,
 			u8 stat;
 
 			retval = sd_check_switch_mode(chip, SD_SWITCH_MODE,
-					func_group, func_to_switch, bus_width);
+						      func_group, func_to_switch, bus_width);
 			if (retval == STATUS_SUCCESS) {
 				switch_good = 1;
 				break;
@@ -1103,8 +1103,7 @@ static int sd_check_switch(struct rts51x_chip *chip,
 			RTS51X_READ_REG(chip, SD_STAT1, &stat);
 
 			if (stat & SD_CRC16_ERR) {
-				RTS51X_DEBUGP("SD CRC16 error when switching"
-							"mode\n");
+				RTS51X_DEBUGP("SD CRC16 error when switchingmode\n");
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 		}
@@ -1120,7 +1119,7 @@ static int sd_check_switch(struct rts51x_chip *chip,
 
 static int sd_switch_function(struct rts51x_chip *chip, u8 bus_width)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i;
 	u8 func_to_switch = 0;
@@ -1134,16 +1133,16 @@ static int sd_switch_function(struct rts51x_chip *chip, u8 bus_width)
 	sd_card->func_group1_mask &= ~(sd_card->sd_switch_fail);
 
 	for (i = 0; i < 4; i++) {
-		switch ((u8) (chip->option.sd_speed_prior >> (i * 8))) {
+		switch ((u8)(chip->option.sd_speed_prior >> (i * 8))) {
 		case DDR50_SUPPORT:
-			if ((sd_card->func_group1_mask & DDR50_SUPPORT_MASK)
-			    && (CHECK_UHS50(chip)))
+			if ((sd_card->func_group1_mask & DDR50_SUPPORT_MASK) &&
+			    (CHECK_UHS50(chip)))
 				func_to_switch = DDR50_SUPPORT;
 			break;
 
 		case SDR50_SUPPORT:
-			if ((sd_card->func_group1_mask & SDR50_SUPPORT_MASK)
-			    && (CHECK_UHS50(chip)))
+			if ((sd_card->func_group1_mask & SDR50_SUPPORT_MASK) &&
+			    (CHECK_UHS50(chip)))
 				func_to_switch = SDR50_SUPPORT;
 			break;
 
@@ -1160,7 +1159,7 @@ static int sd_switch_function(struct rts51x_chip *chip, u8 bus_width)
 			break;
 	}
 	RTS51X_DEBUGP("SD_FUNC_GROUP_1: func_to_switch = 0x%02x",
-		       func_to_switch);
+		      func_to_switch);
 
 	if (func_to_switch) {
 		retval =
@@ -1202,7 +1201,7 @@ static int sd_switch_function(struct rts51x_chip *chip, u8 bus_width)
 		    sd_check_switch(chip, SD_FUNC_GROUP_4, func_to_switch,
 				    bus_width);
 		RTS51X_DEBUGP("Switch current_limit_400 status: (%d)\n",
-			       retval);
+			      retval);
 	}
 
 	return STATUS_SUCCESS;
@@ -1259,7 +1258,7 @@ static int sd_sdr_tuning_rx_cmd(struct rts51x_chip *chip, u8 sample_point)
 
 static int sd_ddr_tuning_rx_cmd(struct rts51x_chip *chip, u8 sample_point)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd[5];
 
@@ -1296,7 +1295,7 @@ static int sd_ddr_tuning_rx_cmd(struct rts51x_chip *chip, u8 sample_point)
 
 static int mmc_ddr_tunning_rx_cmd(struct rts51x_chip *chip, u8 sample_point)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd[5], bus_width;
 
@@ -1334,7 +1333,7 @@ static int mmc_ddr_tunning_rx_cmd(struct rts51x_chip *chip, u8 sample_point)
 
 static int sd_sdr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	retval = sd_change_phase(chip, sample_point, TUNE_TX);
@@ -1348,7 +1347,7 @@ static int sd_sdr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 				     SD_RSP_TYPE_R1, NULL, 0);
 	if (retval != STATUS_SUCCESS) {
 		if (sd_check_err_code(chip, SD_RSP_TIMEOUT)) {
-			/* Tunning TX fail */
+			/* Tuning TX fail */
 			rts51x_ep0_write_register(chip, SD_CFG3,
 						  SD_RSP_80CLK_TIMEOUT_EN, 0);
 			TRACE_RET(chip, STATUS_FAIL);
@@ -1362,7 +1361,7 @@ static int sd_sdr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 
 static int sd_ddr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 cmd[5], bus_width;
 
@@ -1394,10 +1393,10 @@ static int sd_ddr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 	cmd[4] = 0;
 
 	retval = sd_write_data(chip, SD_TM_AUTO_WRITE_2,
-			cmd, 5, 16, 1, bus_width, sd_card->raw_csd, 16, 100);
+			       cmd, 5, 16, 1, bus_width, sd_card->raw_csd, 16, 100);
 	if (retval != STATUS_SUCCESS) {
 		rts51x_clear_sd_error(chip);
-		/* Tunning TX fail */
+		/* Tuning TX fail */
 		rts51x_ep0_write_register(chip, SD_CFG3,
 					  SD_RSP_80CLK_TIMEOUT_EN, 0);
 		TRACE_RET(chip, STATUS_FAIL);
@@ -1414,7 +1413,7 @@ static int sd_ddr_tuning_tx_cmd(struct rts51x_chip *chip, u8 sample_point)
 static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 				u8 tune_dir)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	struct timing_phase_path path[MAX_PHASE + 1];
 	int i, j, cont_path_cnt;
 	int new_block, max_len;
@@ -1427,16 +1426,14 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 				final_phase = chip->option.ddr50_tx_phase;
 			else
 				final_phase = chip->option.ddr50_rx_phase;
-			RTS51X_DEBUGP("DDR50 tuning dir:%d all pass,"
-					"so select default phase:0x%x.\n",
+			RTS51X_DEBUGP("DDR50 tuning dir:%d all pass,so select default phase:0x%x.\n",
 					tune_dir, final_phase);
 		} else {
 			if (tune_dir == TUNE_TX)
 				final_phase = chip->option.sdr50_tx_phase;
 			else
 				final_phase = chip->option.sdr50_rx_phase;
-			RTS51X_DEBUGP("SDR50 tuning dir:%d all pass,"
-					"so select default phase:0x%x.\n",
+			RTS51X_DEBUGP("SDR50 tuning dir:%d all pass,so select default phase:0x%x.\n",
 					tune_dir, final_phase);
 		}
 		goto Search_Finish;
@@ -1459,6 +1456,7 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 			new_block = 1;
 			if (cont_path_cnt) {
 				int idx = cont_path_cnt - 1;
+
 				path[idx].len =
 				    path[idx].end - path[idx].start + 1;
 				path[idx].mid =
@@ -1472,12 +1470,13 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 		goto Search_Finish;
 	} else {
 		int idx = cont_path_cnt - 1;
+
 		path[idx].len = path[idx].end - path[idx].start + 1;
 		path[idx].mid = path[idx].start + path[idx].len / 2;
 	}
 
 	if ((path[0].start == 0) &&
-			(path[cont_path_cnt - 1].end == MAX_PHASE)) {
+	    (path[cont_path_cnt - 1].end == MAX_PHASE)) {
 		path[0].start = path[cont_path_cnt - 1].start - MAX_PHASE - 1;
 		path[0].len += path[cont_path_cnt - 1].len;
 		path[0].mid = path[0].start + path[0].len / 2;
@@ -1491,7 +1490,7 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 	for (i = 0; i < cont_path_cnt; i++) {
 		if (path[i].len > max_len) {
 			max_len = path[i].len;
-			final_phase = (u8) path[i].mid;
+			final_phase = (u8)path[i].mid;
 			final_path_idx = i;
 		}
 
@@ -1502,8 +1501,8 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 		RTS51X_DEBUGP("\n");
 	}
 
-	if ((tune_dir == TUNE_TX) && (CHK_SD_SDR50(sd_card))
-	    && chip->option.sdr50_phase_sel) {
+	if ((tune_dir == TUNE_TX) && (CHK_SD_SDR50(sd_card)) &&
+	    chip->option.sdr50_phase_sel) {
 		if (max_len > 6) {
 			int temp_mid = (max_len - 6) / 2;
 			int temp_final_phase =
@@ -1513,7 +1512,7 @@ static u8 sd_search_final_phase(struct rts51x_chip *chip, u32 phase_map,
 			if (temp_final_phase < 0)
 				final_phase = temp_final_phase + MAX_PHASE + 1;
 			else
-				final_phase = (u8) temp_final_phase;
+				final_phase = (u8)temp_final_phase;
 		}
 	}
 
@@ -1524,7 +1523,7 @@ Search_Finish:
 
 static int sd_tuning_rx(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i, j;
 	u32 raw_phase_map[3], phase_map;
@@ -1551,7 +1550,7 @@ static int sd_tuning_rx(struct rts51x_chip *chip)
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
-			retval = tuning_cmd(chip, (u8) j);
+			retval = tuning_cmd(chip, (u8)j);
 			if (retval == STATUS_SUCCESS) {
 				raw_phase_map[i] |= 1 << j;
 			} else {
@@ -1563,7 +1562,7 @@ static int sd_tuning_rx(struct rts51x_chip *chip)
 	phase_map = raw_phase_map[0] & raw_phase_map[1] & raw_phase_map[2];
 	for (i = 0; i < 3; i++)
 		RTS51X_DEBUGP("RX raw_phase_map[%d] = 0x%04x\n", i,
-			       raw_phase_map[i]);
+			      raw_phase_map[i]);
 	RTS51X_DEBUGP("RX phase_map = 0x%04x\n", phase_map);
 
 	final_phase = sd_search_final_phase(chip, phase_map, TUNE_RX);
@@ -1579,7 +1578,7 @@ static int sd_tuning_rx(struct rts51x_chip *chip)
 
 static int sd_ddr_pre_tuning_tx(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 i;
 	u8 pre_tune_tx_phase;
@@ -1596,16 +1595,16 @@ static int sd_ddr_pre_tuning_tx(struct rts51x_chip *chip)
 			TRACE_RET(chip, STATUS_FAIL);
 		}
 
-		retval = sd_change_phase(chip, (u8) i, TUNE_TX);
+		retval = sd_change_phase(chip, (u8)i, TUNE_TX);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
 
 		retval =
 		    sd_send_cmd_get_rsp(chip, SEND_STATUS, sd_card->sd_addr,
 					SD_RSP_TYPE_R1, NULL, 0);
-		if ((retval == STATUS_SUCCESS)
-		    || !sd_check_err_code(chip, SD_RSP_TIMEOUT))
-			pre_tune_phase_map |= (u32) 1 << i;
+		if ((retval == STATUS_SUCCESS) ||
+		    !sd_check_err_code(chip, SD_RSP_TIMEOUT))
+			pre_tune_phase_map |= (u32)1 << i;
 	}
 
 	RTS51X_WRITE_REG(chip, SD_CFG3, SD_RSP_80CLK_TIMEOUT_EN, 0);
@@ -1623,7 +1622,7 @@ static int sd_ddr_pre_tuning_tx(struct rts51x_chip *chip)
 
 static int sd_tuning_tx(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i, j;
 	u32 raw_phase_map[3], phase_map;
@@ -1650,7 +1649,7 @@ static int sd_tuning_tx(struct rts51x_chip *chip)
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
-			retval = tuning_cmd(chip, (u8) j);
+			retval = tuning_cmd(chip, (u8)j);
 			if (retval == STATUS_SUCCESS) {
 				raw_phase_map[i] |= 1 << j;
 			} else {
@@ -1662,7 +1661,7 @@ static int sd_tuning_tx(struct rts51x_chip *chip)
 	phase_map = raw_phase_map[0] & raw_phase_map[1] & raw_phase_map[2];
 	for (i = 0; i < 3; i++)
 		RTS51X_DEBUGP("TX raw_phase_map[%d] = 0x%04x\n", i,
-			       raw_phase_map[i]);
+			      raw_phase_map[i]);
 	RTS51X_DEBUGP("TX phase_map = 0x%04x\n", phase_map);
 
 	final_phase = sd_search_final_phase(chip, phase_map, TUNE_TX);
@@ -1701,7 +1700,7 @@ static int sd_ddr_tuning(struct rts51x_chip *chip)
 			TRACE_RET(chip, retval);
 	} else {
 		retval =
-		    sd_change_phase(chip, (u8) chip->option.sd_ddr_tx_phase,
+		    sd_change_phase(chip, (u8)chip->option.sd_ddr_tx_phase,
 				    TUNE_TX);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
@@ -1730,7 +1729,7 @@ static int mmc_ddr_tuning(struct rts51x_chip *chip)
 			TRACE_RET(chip, retval);
 	} else {
 		retval =
-		    sd_change_phase(chip, (u8) chip->option.mmc_ddr_tx_phase,
+		    sd_change_phase(chip, (u8)chip->option.mmc_ddr_tx_phase,
 				    TUNE_TX);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
@@ -1751,7 +1750,7 @@ static int mmc_ddr_tuning(struct rts51x_chip *chip)
 
 int rts51x_sd_switch_clock(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int re_tuning = 0;
 
@@ -1788,7 +1787,7 @@ int rts51x_sd_switch_clock(struct rts51x_chip *chip)
 
 static int sd_prepare_reset(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	if (chip->asic_code)
@@ -1887,16 +1886,16 @@ static int sd_init_power(struct rts51x_chip *chip)
 		TRACE_RET(chip, retval);
 	if (!chip->option.FT2_fast_mode) {
 #ifdef SD_XD_IO_FOLLOW_PWR
-		if (CHECK_PKG(chip, LQFP48)
-		    || chip->option.rts5129_D3318_off_enable)
+		if (CHECK_PKG(chip, LQFP48) ||
+		    chip->option.rts5129_D3318_off_enable)
 			rts51x_write_register(chip, CARD_PWR_CTL,
-					LDO_OFF, LDO_OFF);
+					      LDO_OFF, LDO_OFF);
 #endif
 		wait_timeout(250);
 
 #ifdef SD_XD_IO_FOLLOW_PWR
-		if (CHECK_PKG(chip, LQFP48)
-		    || chip->option.rts5129_D3318_off_enable) {
+		if (CHECK_PKG(chip, LQFP48) ||
+		    chip->option.rts5129_D3318_off_enable) {
 			rts51x_init_cmd(chip);
 			if (chip->asic_code)
 				sd_pull_ctl_enable(chip);
@@ -1922,12 +1921,12 @@ static int sd_init_power(struct rts51x_chip *chip)
 		wait_timeout(260);
 
 #ifdef SUPPORT_OCP
-		rts51x_get_card_status(chip, &(chip->card_status));
+		rts51x_get_card_status(chip, &chip->card_status);
 		chip->ocp_stat = (chip->card_status >> 4) & 0x03;
 
 		if (chip->ocp_stat & (MS_OCP_NOW | MS_OCP_EVER)) {
 			RTS51X_DEBUGP("Over current, OCPSTAT is 0x%x\n",
-				       chip->ocp_stat);
+				      chip->ocp_stat);
 			TRACE_RET(chip, STATUS_FAIL);
 		}
 #endif
@@ -1964,7 +1963,7 @@ static int sd_dummy_clock(struct rts51x_chip *chip)
 
 int reset_sd(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval, i = 0, j = 0, k = 0, hi_cap_flow = 0;
 	int sd_dont_switch = 0;
 	int support_1v8 = 0;
@@ -2033,6 +2032,7 @@ RTY_SD_RST:
 	do {
 		{
 			u8 temp = 0;
+
 			rts51x_read_register(chip, CARD_INT_PEND, &temp);
 			RTS51X_DEBUGP("CARD_INT_PEND:%x\n", temp);
 			if (temp & SD_INT) {
@@ -2098,7 +2098,7 @@ RTY_CMD55:
 			if ((CHK_SD_HCXC(sd_card)) && (CHECK_UHS50(chip))) {
 				support_1v8 = (rsp[1] & 0x01) ? 1 : 0;
 				RTS51X_DEBUGP("support_1v8 = %d\n",
-					       support_1v8);
+					      support_1v8);
 			}
 		}
 	} else {
@@ -2107,8 +2107,8 @@ RTY_CMD55:
 	}
 
 	/* CMD11: Switch Voltage */
-	if (support_1v8 && CHECK_UHS50(chip)
-	    && !(((u8) chip->option.sd_speed_prior & SDR104_SUPPORT) ==
+	if (support_1v8 && CHECK_UHS50(chip) &&
+	    !(((u8)chip->option.sd_speed_prior & SDR104_SUPPORT) ==
 		 HS_SUPPORT)) {
 		retval = sd_voltage_switch(chip);
 		if (retval != STATUS_SUCCESS) {
@@ -2132,8 +2132,8 @@ RTY_CMD55:
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 
-	sd_card->sd_addr = (u32) rsp[1] << 24;
-	sd_card->sd_addr += (u32) rsp[2] << 16;
+	sd_card->sd_addr = (u32)rsp[1] << 24;
+	sd_card->sd_addr += (u32)rsp[2] << 16;
 
 	/* Get CSD register for Calculating Timing,Capacity,
 	 * Check CSD to determine as if this is the SD ROM card */
@@ -2178,7 +2178,7 @@ RTY_CMD55:
 
 	/* Set block length 512 bytes for all block commands */
 	retval = sd_send_cmd_get_rsp(chip, SET_BLOCKLEN,
-			0x200, SD_RSP_TYPE_R1, NULL, 0);
+				     0x200, SD_RSP_TYPE_R1, NULL, 0);
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 
@@ -2196,10 +2196,10 @@ RTY_CMD55:
 			retval = sd_switch_function(chip, switch_bus_width);
 			if (retval != STATUS_SUCCESS) {
 				if ((sd_card->sd_switch_fail ==
-				     SDR104_SUPPORT_MASK)
-				    || (sd_card->sd_switch_fail ==
-					DDR50_SUPPORT_MASK)
-				    || (sd_card->sd_switch_fail ==
+				     SDR104_SUPPORT_MASK) ||
+				    (sd_card->sd_switch_fail ==
+					DDR50_SUPPORT_MASK) ||
+				    (sd_card->sd_switch_fail ==
 					    SDR50_SUPPORT_MASK)) {
 					sd_init_power(chip);
 					SET_RETRY_SD20_MODE(sd_card);
@@ -2267,8 +2267,7 @@ RTY_CMD55:
 					 1, SD_BUS_WIDTH_4, NULL, 0, 600);
 			if (retval != STATUS_SUCCESS) {
 				SET_RETRY_SD20_MODE(sd_card);
-				RTS51X_DEBUGP("read lba0 fail,"
-							"goto SD20 mode\n");
+				RTS51X_DEBUGP("read lba0 fail,goto SD20 mode\n");
 				sd_init_power(chip);
 				CLR_SD30_SPEED(sd_card);
 				goto Switch_Fail;
@@ -2279,9 +2278,10 @@ RTY_CMD55:
 			    NULL, 0);
 
 	retval = sd_send_cmd_get_rsp(chip, APP_CMD, sd_card->sd_addr,
-			SD_RSP_TYPE_R1, NULL, 0);
+				     SD_RSP_TYPE_R1, NULL, 0);
 	if (retval == STATUS_SUCCESS) {
 		int ret;
+
 		cmd[0] = 0x40 | SEND_STATUS;
 		cmd[1] = 0x00;
 		cmd[2] = 0x00;
@@ -2291,10 +2291,10 @@ RTY_CMD55:
 		    sd_read_data(chip, SD_TM_NORMAL_READ, cmd, 5, 64, 1,
 				 SD_BUS_WIDTH_4, buf, 64, 600);
 		if (ret == STATUS_SUCCESS) {
-			sd_card_type = ((u16) buf[2] << 8) | (u16) buf[3];
+			sd_card_type = ((u16)buf[2] << 8) | (u16) buf[3];
 			RTS51X_DEBUGP("sd_card_type:0x%4x\n", sd_card_type);
-			if ((sd_card_type == 0x0001)
-			    || (sd_card_type == 0x0002))
+			if ((sd_card_type == 0x0001) ||
+			    (sd_card_type == 0x0002))
 				chip->card_wp |= SD_CARD;
 		} else {
 			rts51x_clear_sd_error(chip);
@@ -2308,7 +2308,7 @@ RTY_CMD55:
 	}
 
 	/* Check SD Machanical Write-Protect Switch */
-	retval = rts51x_get_card_status(chip, &(chip->card_status));
+	retval = rts51x_get_card_status(chip, &chip->card_status);
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 	if (chip->card_status & SD_WP)
@@ -2321,7 +2321,7 @@ RTY_CMD55:
 
 static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 buf[8] = { 0 }, bus_width;
 	u16 byte_cnt;
@@ -2349,6 +2349,7 @@ static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 			       NULL, 0, byte_cnt, 1, bus_width, buf, len, 100);
 	if (retval != STATUS_SUCCESS) {
 		u8 val1 = 0, val2 = 0;
+
 		rts51x_ep0_read_register(chip, SD_STAT1, &val1);
 		rts51x_ep0_read_register(chip, SD_STAT2, &val2);
 		rts51x_clear_sd_error(chip);
@@ -2402,7 +2403,7 @@ static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 
 	if (width == MMC_8BIT_BUS) {
 		RTS51X_DEBUGP("BUSTEST_R [8bits]: 0x%02x 0x%02x\n",
-					buf[0], buf[1]);
+			      buf[0], buf[1]);
 		if ((buf[0] == 0xAA) && (buf[1] == 0x55)) {
 			u8 rsp[5];
 			u32 arg;
@@ -2415,8 +2416,8 @@ static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 			retval =
 			    sd_send_cmd_get_rsp(chip, SWITCH, arg,
 						SD_RSP_TYPE_R1b, rsp, 5);
-			if ((retval == STATUS_SUCCESS)
-			    && !(rsp[4] & MMC_SWITCH_ERR))
+			if ((retval == STATUS_SUCCESS) &&
+			    !(rsp[4] & MMC_SWITCH_ERR))
 				return STATUS_SUCCESS;
 		}
 	} else {
@@ -2433,8 +2434,8 @@ static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 			retval =
 			    sd_send_cmd_get_rsp(chip, SWITCH, arg,
 						SD_RSP_TYPE_R1b, rsp, 5);
-			if ((retval == STATUS_SUCCESS)
-			    && !(rsp[4] & MMC_SWITCH_ERR))
+			if ((retval == STATUS_SUCCESS) &&
+			    !(rsp[4] & MMC_SWITCH_ERR))
 				return STATUS_SUCCESS;
 		}
 	}
@@ -2444,7 +2445,7 @@ static int mmc_test_switch_bus(struct rts51x_chip *chip, u8 width)
 
 static int mmc_switch_timing_bus(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	u8 card_type, card_type_mask = 0;
 	u8 buf[6];
@@ -2457,7 +2458,7 @@ static int mmc_switch_timing_bus(struct rts51x_chip *chip)
 
 	/* SEND_EXT_CSD command */
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD0, 0xFF,
-			0x40 | SEND_EXT_CSD);
+		       0x40 | SEND_EXT_CSD);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF, 0);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF, 0);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF, 0);
@@ -2508,8 +2509,8 @@ static int mmc_switch_timing_bus(struct rts51x_chip *chip)
 	}
 	if (CHK_MMC_SECTOR_MODE(sd_card))
 		sd_card->capacity =
-		    ((u32) buf[5] << 24) | ((u32) buf[4] << 16) |
-		    ((u32) buf[3] << 8) | ((u32) buf[2]);
+		    ((u32)buf[5] << 24) | ((u32) buf[4] << 16) |
+		    ((u32)buf[3] << 8) | ((u32) buf[2]);
 	if (CHECK_UHS50(chip))
 		card_type_mask = 0x07;
 	else
@@ -2555,7 +2556,7 @@ static int mmc_switch_timing_bus(struct rts51x_chip *chip)
 
 static int reset_mmc(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval, i = 0, j = 0, k = 0;
 	u8 rsp[16];
 	u8 spec_ver = 0;
@@ -2580,6 +2581,7 @@ RTY_MMC_RST:
 	do {
 		{
 			u8 temp = 0;
+
 			rts51x_read_register(chip, CARD_INT_PEND, &temp);
 			if (temp & SD_INT) {
 				chip->reset_need_retry = 1;
@@ -2601,8 +2603,8 @@ RTY_MMC_RST:
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
-			if (sd_check_err_code(chip, SD_BUSY)
-			    || sd_check_err_code(chip, SD_TO_ERR)) {
+			if (sd_check_err_code(chip, SD_BUSY) ||
+			    sd_check_err_code(chip, SD_TO_ERR)) {
 				k++;
 				if (k < 20) {
 					sd_clr_err_code(chip);
@@ -2733,15 +2735,14 @@ RTY_MMC_RST:
 			if (retval != STATUS_SUCCESS) {
 				CLR_MMC_DDR52(sd_card);
 				change_to_ddr52 = 0;
-				RTS51X_DEBUGP("read lba0 fail,"
-							"goto SD20 mode\n");
+				RTS51X_DEBUGP("read lba0 fail,goto SD20 mode\n");
 				sd_init_power(chip);
 				goto MMC_DDR_FAIL;
 			}
 		}
 	}
 
-	retval = rts51x_get_card_status(chip, &(chip->card_status));
+	retval = rts51x_get_card_status(chip, &chip->card_status);
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 	if (chip->card_status & SD_WP)
@@ -2752,7 +2753,7 @@ RTY_MMC_RST:
 
 int rts51x_reset_sd_card(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	int i;
 
@@ -2794,7 +2795,7 @@ int rts51x_reset_sd_card(struct rts51x_chip *chip)
 						/* Switch SD bus to
 						 * 3V3 signal */
 						RTS51X_WRITE_REG(chip,
-							SD_PAD_CTL,
+								 SD_PAD_CTL,
 							SD_IO_USING_1V8, 0);
 					}
 				}
@@ -2846,7 +2847,7 @@ int rts51x_reset_sd_card(struct rts51x_chip *chip)
 		}
 	}
 	RTS51X_DEBUGP("sd_card->sd_send_status = %d\n",
-		       sd_card->sd_send_status_en);
+		      sd_card->sd_send_status_en);
 
 	retval = sd_set_init_para(chip);
 	if (retval != STATUS_SUCCESS)
@@ -2861,7 +2862,7 @@ int rts51x_reset_sd_card(struct rts51x_chip *chip)
 
 static int wait_data_buf_ready(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int i, retval;
 
 	for (i = 0; i < WAIT_DATA_READY_RTY_CNT; i++) {
@@ -2889,7 +2890,7 @@ static int wait_data_buf_ready(struct rts51x_chip *chip)
 
 static void sd_stop_seq_mode(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	if (sd_card->seq_mode) {
@@ -2910,7 +2911,7 @@ static void sd_stop_seq_mode(struct rts51x_chip *chip)
 
 static inline int sd_auto_tune_clock(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	if (chip->asic_code) {
@@ -2933,9 +2934,9 @@ static inline int sd_auto_tune_clock(struct rts51x_chip *chip)
 }
 
 int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sector,
-	  u16 sector_cnt)
+		 u16 sector_cnt)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	u32 data_addr;
 	int retval;
 	u8 flag;
@@ -2957,15 +2958,15 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 	if (retval != STATUS_SUCCESS)
 		TRACE_RET(chip, retval);
 
-	if (sd_card->seq_mode && ((sd_card->pre_dir != srb->sc_data_direction)
-				  ||
+	if (sd_card->seq_mode && ((sd_card->pre_dir != srb->sc_data_direction) ||
+				  
 				  ((sd_card->pre_sec_addr +
 				    sd_card->pre_sec_cnt) != start_sector))) {
-		if ((sd_card->pre_dir == DMA_FROM_DEVICE)
-		    && !CHK_SD30_SPEED(sd_card)
-		    && !CHK_SD_HS(sd_card)
-		    && !CHK_MMC_HS(sd_card)
-		    && sd_card->sd_send_status_en) {
+		if ((sd_card->pre_dir == DMA_FROM_DEVICE) &&
+		    !CHK_SD30_SPEED(sd_card) &&
+		    !CHK_SD_HS(sd_card) &&
+		    !CHK_MMC_HS(sd_card) &&
+		    sd_card->sd_send_status_en) {
 			sd_send_cmd_get_rsp(chip, SEND_STATUS,
 					    sd_card->sd_addr, SD_RSP_TYPE_R1,
 					    NULL, 0);
@@ -2983,10 +2984,10 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 
 		RTS51X_WRITE_REG(chip, MC_FIFO_CTL, FIFO_FLUSH, FIFO_FLUSH);
 
-		if (!CHK_SD30_SPEED(sd_card)
-		    && !CHK_SD_HS(sd_card)
-		    && !CHK_MMC_HS(sd_card)
-		    && sd_card->sd_send_status_en) {
+		if (!CHK_SD30_SPEED(sd_card) &&
+		    !CHK_SD_HS(sd_card) &&
+		    !CHK_MMC_HS(sd_card) &&
+		    sd_card->sd_send_status_en) {
 			/* random rw, so pre_sec_cnt < 0x80 */
 			sd_send_cmd_get_rsp(chip, SEND_STATUS,
 					    sd_card->sd_addr, SD_RSP_TYPE_R1,
@@ -2999,9 +3000,9 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, 0x00);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF, 0x02);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF,
-		       (u8) sector_cnt);
+		       (u8)sector_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-		       (u8) (sector_cnt >> 8));
+		       (u8)(sector_cnt >> 8));
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
 		       RING_BUFFER);
@@ -3023,7 +3024,7 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 			       SD_RSP_LEN_0);
 
 		rts51x_trans_dma_enable(srb->sc_data_direction, chip, sector_cnt * 512,
-				 DMA_512);
+					DMA_512);
 
 		if (srb->sc_data_direction == DMA_FROM_DEVICE) {
 			flag = MODE_CDIR;
@@ -3047,13 +3048,13 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD0, 0xFF,
 				       0x40 | READ_MULTIPLE_BLOCK);
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF,
-				       (u8) (data_addr >> 24));
+				       (u8)(data_addr >> 24));
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF,
-				       (u8) (data_addr >> 16));
+				       (u8)(data_addr >> 16));
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF,
-				       (u8) (data_addr >> 8));
+				       (u8)(data_addr >> 8));
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF,
-				       (u8) data_addr);
+				       (u8)data_addr);
 
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG2, 0xFF,
 				       SD_CALCULATE_CRC7 | SD_CHECK_CRC16 |
@@ -3061,7 +3062,7 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 				       SD_RSP_LEN_6);
 
 			rts51x_trans_dma_enable(srb->sc_data_direction, chip,
-					 sector_cnt * 512, DMA_512);
+						sector_cnt * 512, DMA_512);
 
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
 				       SD_TM_AUTO_READ_2 | SD_TRANSFER_START);
@@ -3102,7 +3103,7 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 				       SD_RSP_LEN_0);
 
 			rts51x_trans_dma_enable(srb->sc_data_direction, chip,
-					 sector_cnt * 512, DMA_512);
+						sector_cnt * 512, DMA_512);
 
 			rts51x_add_cmd(chip, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
 				       SD_TM_AUTO_WRITE_3 | SD_TRANSFER_START);
@@ -3172,7 +3173,7 @@ int rts51x_sd_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 
 void rts51x_sd_cleanup_work(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 
 	if (sd_card->seq_mode) {
 		RTS51X_DEBUGP("SD: stop transmission\n");
@@ -3188,8 +3189,8 @@ static inline void sd_fill_power_off_card3v3(struct rts51x_chip *chip)
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_OE, SD_OUTPUT_EN, 0);
 	if (!chip->option.FT2_fast_mode) {
 #ifdef SD_XD_IO_FOLLOW_PWR
-		if (CHECK_PKG(chip, LQFP48)
-		    || chip->option.rts5129_D3318_off_enable)
+		if (CHECK_PKG(chip, LQFP48) ||
+		    chip->option.rts5129_D3318_off_enable)
 			rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_PWR_CTL,
 				       POWER_MASK | LDO_OFF,
 				       POWER_OFF | LDO_OFF);
@@ -3224,7 +3225,7 @@ static int sd_power_off_card3v3(struct rts51x_chip *chip)
 
 int rts51x_release_sd_card(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 
 	RTS51X_DEBUGP("rts51x_release_sd_card\n");

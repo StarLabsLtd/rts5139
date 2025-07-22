@@ -232,7 +232,7 @@ GetEKBFinish:
   */
 int rts51x_mg_chg(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	int bufflen;
 	int i;
@@ -323,7 +323,7 @@ int rts51x_mg_chg(struct scsi_cmnd *srb, struct rts51x_chip *chip)
   */
 int rts51x_mg_get_rsp_chg(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	int bufflen;
 	unsigned int lun = SCSI_LUN(srb);
@@ -392,7 +392,7 @@ int rts51x_mg_get_rsp_chg(struct scsi_cmnd *srb, struct rts51x_chip *chip)
   */
 int rts51x_mg_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	int i;
 	int bufflen;
@@ -450,7 +450,7 @@ int rts51x_mg_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
   */
 int rts51x_mg_get_ICV(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	int bufflen;
 	unsigned int lun = SCSI_LUN(srb);
@@ -514,7 +514,7 @@ GetICVFinish:
   */
 int rts51x_mg_set_ICV(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	int bufflen;
 #ifdef MG_SET_ICV_SLOW
@@ -543,10 +543,10 @@ int rts51x_mg_set_ICV(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 		if (ms_card->mg_auth == 0) {
 			if ((buf[5] & 0xC0) != 0)
 				rts51x_set_sense_type(chip, lun,
-					SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
+						      SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
 			else
 				rts51x_set_sense_type(chip, lun,
-					SENSE_TYPE_MG_WRITE_ERR);
+						      SENSE_TYPE_MG_WRITE_ERR);
 		} else {
 			rts51x_set_sense_type(chip, lun, SENSE_TYPE_MG_WRITE_ERR);
 		}
@@ -585,32 +585,32 @@ int rts51x_mg_set_ICV(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 			if (ms_card->mg_auth == 0) {
 				if ((buf[5] & 0xC0) != 0)
 					rts51x_set_sense_type(chip, lun,
-						SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
+							      SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
 				else
 					rts51x_set_sense_type(chip, lun,
-						SENSE_TYPE_MG_WRITE_ERR);
+							      SENSE_TYPE_MG_WRITE_ERR);
 			} else {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MG_WRITE_ERR);
+						      SENSE_TYPE_MG_WRITE_ERR);
 			}
 			retval = STATUS_FAIL;
 			TRACE_GOTO(chip, SetICVFinish);
 		}
 
 		retval = rts51x_get_rsp(chip, 1, 3000);
-		if (CHECK_MS_TRANS_FAIL(chip, retval)
-		    || mg_check_int_error(chip)) {
+		if (CHECK_MS_TRANS_FAIL(chip, retval) ||
+		    mg_check_int_error(chip)) {
 			rts51x_clear_ms_error(chip);
 			if (ms_card->mg_auth == 0) {
 				if ((buf[5] & 0xC0) != 0)
 					rts51x_set_sense_type(chip, lun,
-						SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
+							      SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
 				else
 					rts51x_set_sense_type(chip, lun,
-						SENSE_TYPE_MG_WRITE_ERR);
+							      SENSE_TYPE_MG_WRITE_ERR);
 			} else {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MG_WRITE_ERR);
+						      SENSE_TYPE_MG_WRITE_ERR);
 			}
 			retval = STATUS_FAIL;
 			TRACE_GOTO(chip, SetICVFinish);
@@ -624,10 +624,10 @@ int rts51x_mg_set_ICV(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 		if (ms_card->mg_auth == 0) {
 			if ((buf[5] & 0xC0) != 0)
 				rts51x_set_sense_type(chip, lun,
-					SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
+						      SENSE_TYPE_MG_KEY_FAIL_NOT_ESTAB);
 			else
 				rts51x_set_sense_type(chip, lun,
-					SENSE_TYPE_MG_WRITE_ERR);
+						      SENSE_TYPE_MG_WRITE_ERR);
 		} else {
 			rts51x_set_sense_type(chip, lun, SENSE_TYPE_MG_WRITE_ERR);
 		}

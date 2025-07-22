@@ -55,10 +55,10 @@ static int rts51x_sd_direct_cmnd(struct rts51x_chip *chip,
 	standby = (cmnd->cmnd[0] >> 1) & 0x01;
 	acmd = cmnd->cmnd[0] & 0x01;
 	cmd_idx = cmnd->cmnd[1];
-	arg = ((u32) (cmnd->cmnd[2]) << 24) | ((u32) (cmnd->cmnd[3]) << 16) |
-	    ((u32) (cmnd->cmnd[4]) << 8) | cmnd->cmnd[5];
+	arg = ((u32)(cmnd->cmnd[2]) << 24) | ((u32) (cmnd->cmnd[3]) << 16) |
+	    ((u32)(cmnd->cmnd[4]) << 8) | cmnd->cmnd[5];
 	len =
-	    ((u32) (cmnd->cmnd[6]) << 16) | ((u32) (cmnd->cmnd[7]) << 8) |
+	    ((u32)(cmnd->cmnd[6]) << 16) | ((u32) (cmnd->cmnd[7]) << 8) |
 	    cmnd->cmnd[8];
 	rsp_code = cmnd->cmnd[9];
 
@@ -71,7 +71,7 @@ static int rts51x_sd_direct_cmnd(struct rts51x_chip *chip,
 	case 0:
 		/* No data */
 		retval = ext_rts51x_sd_execute_no_data(chip,
-						chip->card2lun[SD_CARD],
+						       chip->card2lun[SD_CARD],
 						cmd_idx, standby, acmd,
 						rsp_code, arg);
 		if (retval != TRANSPORT_GOOD)
@@ -85,7 +85,7 @@ static int rts51x_sd_direct_cmnd(struct rts51x_chip *chip,
 			TRACE_RET(chip, STATUS_NOMEM);
 
 		retval = ext_rts51x_sd_execute_read_data(chip,
-						chip->card2lun[SD_CARD],
+							 chip->card2lun[SD_CARD],
 						cmd_idx, cmd12, standby, acmd,
 						rsp_code, arg, len, buf,
 						cmnd->buf_len, 0);
@@ -120,7 +120,7 @@ static int rts51x_sd_direct_cmnd(struct rts51x_chip *chip,
 
 		retval =
 		    ext_rts51x_sd_execute_write_data(chip,
-						chip->card2lun[SD_CARD],
+						     chip->card2lun[SD_CARD],
 						cmd_idx, cmd12, standby, acmd,
 						rsp_code, arg, len, buf,
 						cmnd->buf_len, 0);
@@ -142,7 +142,7 @@ static int rts51x_sd_direct_cmnd(struct rts51x_chip *chip,
 
 static int rts51x_sd_get_rsp(struct rts51x_chip *chip, struct sd_rsp *rsp)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int count = 0, retval;
 
 	if (sd_card->pre_cmd_err) {
@@ -163,7 +163,7 @@ static int rts51x_sd_get_rsp(struct rts51x_chip *chip, struct sd_rsp *rsp)
 
 	RTS51X_DEBUGP("Response length: %d\n", count);
 	RTS51X_DEBUGP("Response: 0x%x 0x%x 0x%x 0x%x\n",
-		       sd_card->rsp[0], sd_card->rsp[1], sd_card->rsp[2],
+		      sd_card->rsp[0], sd_card->rsp[1], sd_card->rsp[2],
 		       sd_card->rsp[3]);
 
 	return STATUS_SUCCESS;
@@ -181,7 +181,7 @@ int rts51x_open(struct inode *inode, struct file *filp)
 	interface = usb_find_interface(&rts51x_driver, subminor);
 	if (!interface) {
 		RTS51X_DEBUGP("%s - error, can't find device for minor %d\n",
-			       __func__, subminor);
+			      __func__, subminor);
 		retval = -ENODEV;
 		goto exit;
 	}
@@ -197,7 +197,7 @@ int rts51x_open(struct inode *inode, struct file *filp)
 	scsi_host_get(rts51x_to_host(chip));
 
 	/* lock the device pointers */
-	mutex_lock(&(chip->usb->dev_mutex));
+	mutex_lock(&chip->usb->dev_mutex);
 
 	/* save our object in the file's private structure */
 	filp->private_data = chip;
@@ -214,7 +214,7 @@ int rts51x_release(struct inode *inode, struct file *filp)
 	struct rts51x_chip *chip;
 
 	chip = (struct rts51x_chip *)filp->private_data;
-	if (chip == NULL)
+	if (!chip)
 		return -ENODEV;
 
 	/* Drop our reference to the host; the SCSI core will free it
@@ -244,11 +244,11 @@ long rts51x_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	int retval = 0;
 
 	chip = (struct rts51x_chip *)filp->private_data;
-	if (chip == NULL)
+	if (!chip)
 		return -ENODEV;
 
 	/* lock the device pointers */
-	mutex_lock(&(chip->usb->dev_mutex));
+	mutex_lock(&chip->usb->dev_mutex);
 
 	switch (cmd) {
 	case RTS5139_IOC_SD_DIRECT:

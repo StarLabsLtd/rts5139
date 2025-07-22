@@ -43,9 +43,9 @@
 
 void rts51x_do_remaining_work(struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
-	struct xd_info *xd_card = &(chip->xd_card);
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct sd_info *sd_card = &chip->sd_card;
+	struct xd_info *xd_card = &chip->xd_card;
+	struct ms_info *ms_card = &chip->ms_card;
 
 	if (chip->card_ready & SD_CARD) {
 		if (sd_card->seq_mode) {
@@ -175,13 +175,13 @@ static void do_rts51x_reset_ms_card(struct rts51x_chip *chip)
 }
 
 static void card_cd_debounce(struct rts51x_chip *chip, u8 *need_reset,
-		      u8 *need_release)
+			     u8 *need_release)
 {
 	int retval;
 	u8 release_map = 0, reset_map = 0;
 	u8 value;
 
-	retval = rts51x_get_card_status(chip, &(chip->card_status));
+	retval = rts51x_get_card_status(chip, &chip->card_status);
 #ifdef SUPPORT_OCP
 	chip->ocp_stat = (chip->card_status >> 4) & 0x03;
 #endif
@@ -232,7 +232,7 @@ static void card_cd_debounce(struct rts51x_chip *chip, u8 *need_reset,
 
 		for (i = 0; i < (chip->option.debounce_num); i++) {
 			retval =
-			    rts51x_get_card_status(chip, &(chip->card_status));
+			    rts51x_get_card_status(chip, &chip->card_status);
 			if (retval != STATUS_SUCCESS) {
 				reset_map = release_map = 0;
 				goto Exit_Debounce;
@@ -253,16 +253,16 @@ static void card_cd_debounce(struct rts51x_chip *chip, u8 *need_reset,
 		}
 
 		reset_map = 0;
-		if (!(chip->card_exist & XD_CARD)
-		    && (xd_cnt > (chip->option.debounce_num - 1))) {
+		if (!(chip->card_exist & XD_CARD) &&
+		    (xd_cnt > (chip->option.debounce_num - 1))) {
 			reset_map |= XD_CARD;
 		}
-		if (!(chip->card_exist & SD_CARD)
-		    && (sd_cnt > (chip->option.debounce_num - 1))) {
+		if (!(chip->card_exist & SD_CARD) &&
+		    (sd_cnt > (chip->option.debounce_num - 1))) {
 			reset_map |= SD_CARD;
 		}
-		if (!(chip->card_exist & MS_CARD)
-		    && (ms_cnt > (chip->option.debounce_num - 1))) {
+		if (!(chip->card_exist & MS_CARD) &&
+		    (ms_cnt > (chip->option.debounce_num - 1))) {
 			reset_map |= MS_CARD;
 		}
 	}
@@ -304,7 +304,7 @@ void rts51x_init_cards(struct rts51x_chip *chip)
 				rts51x_release_xd_card(chip);
 				chip->rw_card[chip->card2lun[XD_CARD]] = NULL;
 				clear_bit(chip->card2lun[XD_CARD],
-					  &(chip->lun_mc));
+					  &chip->lun_mc);
 			}
 		}
 
@@ -315,7 +315,7 @@ void rts51x_init_cards(struct rts51x_chip *chip)
 				rts51x_release_sd_card(chip);
 				chip->rw_card[chip->card2lun[SD_CARD]] = NULL;
 				clear_bit(chip->card2lun[SD_CARD],
-					  &(chip->lun_mc));
+					  &chip->lun_mc);
 			}
 		}
 
@@ -326,7 +326,7 @@ void rts51x_init_cards(struct rts51x_chip *chip)
 				rts51x_release_ms_card(chip);
 				chip->rw_card[chip->card2lun[MS_CARD]] = NULL;
 				clear_bit(chip->card2lun[MS_CARD],
-					  &(chip->lun_mc));
+					  &chip->lun_mc);
 			}
 		}
 	}
@@ -378,10 +378,10 @@ static inline u8 double_depth(u8 depth)
 
 int rts51x_switch_ssc_clock(struct rts51x_chip *chip, int clk)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct sd_info *sd_card = &chip->sd_card;
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
-	u8 N = (u8) (clk - 2), min_N, max_N;
+	u8 N = (u8)(clk - 2), min_N, max_N;
 	u8 mcu_cnt, div, max_div, ssc_depth;
 	int sd_vpclk_phase_reset = 0;
 
@@ -394,16 +394,16 @@ int rts51x_switch_ssc_clock(struct rts51x_chip *chip, int clk)
 
 	RTS51X_DEBUGP("Switch SSC clock to %dMHz\n", clk);
 
-	if ((clk <= 2) || (N > max_N))
+	if ((clk <= 2) || (max_N < N))
 		TRACE_RET(chip, STATUS_FAIL);
 
-	mcu_cnt = (u8) (60 / clk + 3);
+	mcu_cnt = (u8)(60 / clk + 3);
 	if (mcu_cnt > 15)
 		mcu_cnt = 15;
 	/* To make sure that the SSC clock div_n is
 	 * equal or greater than min_N */
 	div = CLK_DIV_1;
-	while ((N < min_N) && (div < max_div)) {
+	while ((min_N > N) && (div < max_div)) {
 		N = (N + 2) * 2 - 2;
 		div++;
 	}
@@ -422,8 +422,8 @@ int rts51x_switch_ssc_clock(struct rts51x_chip *chip, int clk)
 			} else if (CHK_SD_HS(sd_card)) {
 				ssc_depth =
 				    double_depth(chip->option.ssc_depth_sd_hs);
-			} else if (CHK_MMC_52M(sd_card)
-				   || CHK_MMC_DDR52(sd_card)) {
+			} else if (CHK_MMC_52M(sd_card) ||
+				   CHK_MMC_DDR52(sd_card)) {
 				ssc_depth =
 				    double_depth(chip->option.
 						 ssc_depth_mmc_52m);
@@ -523,7 +523,8 @@ int rts51x_switch_normal_clock(struct rts51x_chip *chip, int clk)
 		return STATUS_SUCCESS;
 
 	if (chip->cur_card == SD_CARD) {
-		struct sd_info *sd_card = &(chip->sd_card);
+		struct sd_info *sd_card = &chip->sd_card;
+
 		if (CHK_SD30_SPEED(sd_card) || CHK_MMC_DDR52(sd_card))
 			sd_vpclk_phase_reset = 1;
 	}
@@ -594,7 +595,7 @@ int rts51x_switch_normal_clock(struct rts51x_chip *chip, int clk)
 
 	default:
 		RTS51X_DEBUGP("Try to switch to an illegal clock (%d)\n",
-			       clk);
+			      clk);
 		TRACE_RET(chip, STATUS_FAIL);
 	}
 
@@ -654,17 +655,17 @@ int rts51x_switch_normal_clock(struct rts51x_chip *chip, int clk)
 }
 
 int rts51x_card_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip,
-		u32 sec_addr, u16 sec_cnt)
+		   u32 sec_addr, u16 sec_cnt)
 {
 	int retval;
 	unsigned int lun = SCSI_LUN(srb);
 	int i;
 
-	if (chip->rw_card[lun] == NULL)
+	if (!chip->rw_card[lun])
 		return STATUS_FAIL;
 
 	RTS51X_DEBUGP("%s card, sector addr: 0x%x, sector cnt: %d\n",
-		       (srb->sc_data_direction ==
+		      (srb->sc_data_direction ==
 			DMA_TO_DEVICE) ? "Write" : "Read", sec_addr, sec_cnt);
 
 	chip->rw_need_retry = 0;
@@ -691,11 +692,11 @@ int rts51x_card_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip,
 u8 rts51x_get_lun_card(struct rts51x_chip *chip, unsigned int lun)
 {
 	if ((chip->card_ready & chip->lun2card[lun]) == XD_CARD)
-		return (u8) XD_CARD;
+		return (u8)XD_CARD;
 	else if ((chip->card_ready & chip->lun2card[lun]) == SD_CARD)
-		return (u8) SD_CARD;
+		return (u8)SD_CARD;
 	else if ((chip->card_ready & chip->lun2card[lun]) == MS_CARD)
-		return (u8) MS_CARD;
+		return (u8)MS_CARD;
 
 	return 0;
 }
@@ -771,7 +772,7 @@ void rts51x_eject_card(struct rts51x_chip *chip, unsigned int lun)
 }
 
 void rts51x_trans_dma_enable(enum dma_data_direction dir,
-		struct rts51x_chip *chip, u32 byte_cnt, u8 pack_size)
+			     struct rts51x_chip *chip, u32 byte_cnt, u8 pack_size)
 {
 	if (pack_size > DMA_1024)
 		pack_size = DMA_512;
@@ -780,12 +781,12 @@ void rts51x_trans_dma_enable(enum dma_data_direction dir,
 		       RING_BUFFER);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_TC3, 0xFF,
-		       (u8) (byte_cnt >> 24));
+		       (u8)(byte_cnt >> 24));
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_TC2, 0xFF,
-		       (u8) (byte_cnt >> 16));
+		       (u8)(byte_cnt >> 16));
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_TC1, 0xFF,
-		       (u8) (byte_cnt >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_TC0, 0xFF, (u8) byte_cnt);
+		       (u8)(byte_cnt >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_TC0, 0xFF, (u8)byte_cnt);
 
 	if (dir == DMA_FROM_DEVICE) {
 		rts51x_add_cmd(chip, WRITE_REG_CMD, MC_DMA_CTL,
@@ -853,7 +854,7 @@ int monitor_card_cd(struct rts51x_chip *chip, u8 card)
 	card_cd[XD_CARD] = XD_CD;
 	card_cd[MS_CARD] = MS_CD;
 
-	retval = rts51x_get_card_status(chip, &(chip->card_status));
+	retval = rts51x_get_card_status(chip, &chip->card_status);
 	if (retval != STATUS_SUCCESS)
 		return CD_NOT_EXIST;
 

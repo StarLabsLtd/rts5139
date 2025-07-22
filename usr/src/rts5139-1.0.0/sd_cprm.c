@@ -79,7 +79,7 @@ static inline int get_rsp_type(u8 rsp_code, u8 *rsp_type, int *rsp_len)
 }
 
 static int ext_sd_send_cmd_get_rsp(struct rts51x_chip *chip, u8 cmd_idx,
-			    u32 arg, u8 rsp_type, u8 *rsp, int rsp_len,
+				   u32 arg, u8 rsp_type, u8 *rsp, int rsp_len,
 			    int special_check)
 {
 	int retval;
@@ -99,10 +99,10 @@ RTY_SEND_CMD:
 	rts51x_init_cmd(chip);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD0, 0xFF, 0x40 | cmd_idx);
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF, (u8) (arg >> 24));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF, (u8) (arg >> 16));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF, (u8) (arg >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8) arg);
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF, (u8)(arg >> 24));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF, (u8)(arg >> 16));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF, (u8)(arg >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8)arg);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG2, 0xFF, rsp_type);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE,
@@ -172,7 +172,7 @@ RTY_SEND_CMD:
 		}
 		retval =
 		    rts51x_seq_read_register(chip, reg_addr,
-						     (unsigned short)len, buf);
+					     (unsigned short)len, buf);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
 		RTS51X_READ_REG(chip, SD_CMD5, buf + len);
@@ -225,7 +225,7 @@ RTY_SEND_CMD:
 }
 
 static int ext_sd_get_rsp(struct rts51x_chip *chip, int len,
-			u8 *rsp, u8 rsp_type)
+			  u8 *rsp, u8 rsp_type)
 {
 	int retval, rsp_len;
 	u16 reg_addr;
@@ -264,17 +264,17 @@ static int ext_sd_get_rsp(struct rts51x_chip *chip, int len,
 
 		RTS51X_DEBUGP("min_len = %d\n", min_len);
 		RTS51X_DEBUGP("Response in cmd buf: 0x%x 0x%x 0x%x 0x%x\n",
-			       rsp[0], rsp[1], rsp[2], rsp[3]);
+			      rsp[0], rsp[1], rsp[2], rsp[3]);
 	}
 
 	return STATUS_SUCCESS;
 }
 
 int ext_rts51x_sd_execute_no_data(struct rts51x_chip *chip, unsigned int lun,
-			   u8 cmd_idx, u8 standby, u8 acmd, u8 rsp_code,
+				  u8 cmd_idx, u8 standby, u8 acmd, u8 rsp_code,
 			   u32 arg)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval, rsp_len;
 	u8 rsp_type;
 
@@ -339,11 +339,11 @@ SD_Execute_Cmd_Failed:
 }
 
 int ext_rts51x_sd_execute_read_data(struct rts51x_chip *chip, unsigned int lun,
-			     u8 cmd_idx, u8 cmd12, u8 standby,
+				    u8 cmd_idx, u8 cmd12, u8 standby,
 			     u8 acmd, u8 rsp_code, u32 arg, u32 data_len,
 			     void *data_buf, unsigned int buf_len, int use_sg)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval, rsp_len, i;
 	int cmd13_checkbit = 0, read_err = 0;
 	u8 rsp_type, bus_width;
@@ -398,17 +398,17 @@ int ext_rts51x_sd_execute_read_data(struct rts51x_chip *chip, unsigned int lun,
 		unsigned int offset = 0;
 		void *sg = NULL;
 
-		byte_cnt = (u16) (data_len & 0x3FF);
+		byte_cnt = (u16)(data_len & 0x3FF);
 		blk_cnt = 1;
 
 		cmd[0] = 0x40 | cmd_idx;
-		cmd[1] = (u8) (arg >> 24);
-		cmd[2] = (u8) (arg >> 16);
-		cmd[3] = (u8) (arg >> 8);
-		cmd[4] = (u8) arg;
+		cmd[1] = (u8)(arg >> 24);
+		cmd[2] = (u8)(arg >> 16);
+		cmd[3] = (u8)(arg >> 8);
+		cmd[4] = (u8)arg;
 
 		buf = kmalloc(data_len, GFP_KERNEL);
-		if (buf == NULL)
+		if (!buf)
 			TRACE_RET(chip, TRANSPORT_ERROR);
 
 		retval = sd_read_data(chip, SD_TM_NORMAL_READ, cmd, 5, byte_cnt,
@@ -435,18 +435,18 @@ int ext_rts51x_sd_execute_read_data(struct rts51x_chip *chip, unsigned int lun,
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF, 0x02);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, 0x00);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H,
-			       0xFF, (u8) (data_len >> 17));
+			       0xFF, (u8)(data_len >> 17));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L,
-			       0xFF, (u8) ((data_len & 0x0001FE00) >> 9));
+			       0xFF, (u8)((data_len & 0x0001FE00) >> 9));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD0, 0xFF,
 			       0x40 | cmd_idx);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD1, 0xFF,
-			       (u8) (arg >> 24));
+			       (u8)(arg >> 24));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD2, 0xFF,
-			       (u8) (arg >> 16));
+			       (u8)(arg >> 16));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD3, 0xFF,
-			       (u8) (arg >> 8));
-		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8) arg);
+			       (u8)(arg >> 8));
+		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8)arg);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG1, 0x03, bus_width);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_CFG2, 0xFF, rsp_type);
 		rts51x_trans_dma_enable(DMA_FROM_DEVICE, chip, data_len, DMA_512);
@@ -544,11 +544,11 @@ SD_Execute_Read_Cmd_Failed:
 }
 
 int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
-			      u8 cmd_idx, u8 cmd12, u8 standby, u8 acmd,
+				     u8 cmd_idx, u8 cmd12, u8 standby, u8 acmd,
 			      u8 rsp_code, u32 arg, u32 data_len,
 			      void *data_buf, unsigned int buf_len, int use_sg)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval, rsp_len;
 	int cmd13_checkbit = 0, write_err = 0;
 	u8 rsp_type;
@@ -608,7 +608,7 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 		void *sg = NULL;
 
 		buf = kmalloc(data_len, GFP_KERNEL);
-		if (buf == NULL)
+		if (!buf)
 			TRACE_RET(chip, TRANSPORT_ERROR);
 
 		if (use_sg)
@@ -617,12 +617,11 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 		else
 			memcpy(buf, data_buf, data_len);
 
-
 		if (data_len > 256) {
 			rts51x_init_cmd(chip);
 			for (i = 0; i < 256; i++) {
 				rts51x_add_cmd(chip, WRITE_REG_CMD,
-					       (u16) (PPBUF_BASE2 + i), 0xFF,
+					       (u16)(PPBUF_BASE2 + i), 0xFF,
 					       buf[i]);
 			}
 			retval = rts51x_send_cmd(chip, MODE_C, 250);
@@ -634,7 +633,7 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 			rts51x_init_cmd(chip);
 			for (i = 256; i < data_len; i++) {
 				rts51x_add_cmd(chip, WRITE_REG_CMD,
-					       (u16) (PPBUF_BASE2 + i), 0xFF,
+					       (u16)(PPBUF_BASE2 + i), 0xFF,
 					       buf[i]);
 			}
 			retval = rts51x_send_cmd(chip, MODE_C, 250);
@@ -646,7 +645,7 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 			rts51x_init_cmd(chip);
 			for (i = 0; i < data_len; i++) {
 				rts51x_add_cmd(chip, WRITE_REG_CMD,
-					       (u16) (PPBUF_BASE2 + i), 0xFF,
+					       (u16)(PPBUF_BASE2 + i), 0xFF,
 					       buf[i]);
 			}
 			retval = rts51x_send_cmd(chip, MODE_C, 250);
@@ -661,9 +660,9 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 		rts51x_init_cmd(chip);
 
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-			       (u8) ((data_len >> 8) & 0x03));
+			       (u8)((data_len >> 8) & 0x03));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF,
-			       (u8) data_len);
+			       (u8)data_len);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF, 0x00);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF, 0x01);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
@@ -687,9 +686,9 @@ int ext_rts51x_sd_execute_write_data(struct rts51x_chip *chip, unsigned int lun,
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF, 0x02);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF, 0x00);
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_H,
-			       0xFF, (u8) (data_len >> 17));
+			       0xFF, (u8)(data_len >> 17));
 		rts51x_add_cmd(chip, WRITE_REG_CMD, SD_BLOCK_CNT_L,
-			       0xFF, (u8) ((data_len & 0x0001FE00) >> 9));
+			       0xFF, (u8)((data_len & 0x0001FE00) >> 9));
 
 		rts51x_trans_dma_enable(DMA_TO_DEVICE, chip, data_len, DMA_512);
 
@@ -781,7 +780,7 @@ SD_Execute_Write_Cmd_Failed:
 
 int rts51x_sd_pass_thru_mode(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	unsigned int lun = SCSI_LUN(srb);
 	int len;
 	u8 buf[18] = {
@@ -813,10 +812,10 @@ int rts51x_sd_pass_thru_mode(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 		TRACE_RET(chip, TRANSPORT_FAILED);
 	}
 
-	if ((0x53 != srb->cmnd[2]) || (0x44 != srb->cmnd[3])
-	    || (0x20 != srb->cmnd[4]) || (0x43 != srb->cmnd[5])
-	    || (0x61 != srb->cmnd[6]) || (0x72 != srb->cmnd[7])
-	    || (0x64 != srb->cmnd[8])) {
+	if ((0x53 != srb->cmnd[2]) || (srb->cmnd[3] != 0x44) ||
+	    (0x20 != srb->cmnd[4]) || (srb->cmnd[5] != 0x43) ||
+	    (0x61 != srb->cmnd[6]) || (srb->cmnd[7] != 0x72) ||
+	    (srb->cmnd[8] != 0x64)) {
 		rts51x_set_sense_type(chip, lun, SENSE_TYPE_MEDIA_INVALID_CMD_FIELD);
 		TRACE_RET(chip, TRANSPORT_FAILED);
 	}
@@ -836,16 +835,16 @@ int rts51x_sd_pass_thru_mode(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 	}
 
 	/* 0x01:SD Memory Card; 0x02:Other Media; 0x03:Illegal Media; */
-	buf[5] = (1 == CHK_SD(sd_card)) ? 0x01 : 0x02;
+	buf[5] = (CHK_SD(sd_card) == 1) ? 0x01 : 0x02;
 	if (chip->card_wp & SD_CARD)
 		buf[5] |= 0x80;
 
-	buf[6] = (u8) (sd_card->sd_addr >> 16);
-	buf[7] = (u8) (sd_card->sd_addr >> 24);
+	buf[6] = (u8)(sd_card->sd_addr >> 16);
+	buf[7] = (u8)(sd_card->sd_addr >> 24);
 
 	buf[15] = chip->max_lun;
 
-	len = min_t(unsigned, 18, scsi_bufflen(srb));
+	len = min_t(unsigned int, 18, scsi_bufflen(srb));
 	rts51x_set_xfer_buf(buf, len, srb);
 
 	return TRANSPORT_GOOD;
@@ -853,7 +852,7 @@ int rts51x_sd_pass_thru_mode(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 
 int rts51x_sd_execute_no_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	unsigned int lun = SCSI_LUN(srb);
 	int retval;
 	u8 cmd_idx, rsp_code;
@@ -871,21 +870,21 @@ int rts51x_sd_execute_no_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 	if (srb->cmnd[1] & 0x01)
 		acmd = 1;
 
-	arg = ((u32) srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
-	    ((u32) srb->cmnd[5] << 8) | srb->cmnd[6];
+	arg = ((u32)srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
+	    ((u32)srb->cmnd[5] << 8) | srb->cmnd[6];
 
 	rsp_code = srb->cmnd[10];
 
 	retval =
 	    ext_rts51x_sd_execute_no_data(chip, lun, cmd_idx, standby, acmd, rsp_code,
-				   arg);
+					  arg);
 	scsi_set_resid(srb, 0);
 	return retval;
 }
 
 int rts51x_sd_execute_read_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	unsigned int lun = SCSI_LUN(srb);
 	u8 cmd_idx, rsp_code, send_cmd12 = 0, standby = 0, acmd = 0;
@@ -904,17 +903,17 @@ int rts51x_sd_execute_read_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 	if (srb->cmnd[1] & 0x01)
 		acmd = 1;
 
-	arg = ((u32) srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
-	    ((u32) srb->cmnd[5] << 8) | srb->cmnd[6];
+	arg = ((u32)srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
+	    ((u32)srb->cmnd[5] << 8) | srb->cmnd[6];
 
 	data_len =
-	    ((u32) srb->cmnd[7] << 16) | ((u32) srb->cmnd[8] << 8) |
+	    ((u32)srb->cmnd[7] << 16) | ((u32) srb->cmnd[8] << 8) |
 	    srb->cmnd[9];
 	rsp_code = srb->cmnd[10];
 
 	retval =
 	    ext_rts51x_sd_execute_read_data(chip, lun, cmd_idx, send_cmd12, standby,
-				     acmd, rsp_code, arg, data_len,
+					    acmd, rsp_code, arg, data_len,
 				     scsi_sglist(srb), scsi_bufflen(srb),
 				     scsi_sg_count(srb));
 	scsi_set_resid(srb, 0);
@@ -923,7 +922,7 @@ int rts51x_sd_execute_read_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 
 int rts51x_sd_execute_write_data(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	int retval;
 	unsigned int lun = SCSI_LUN(srb);
 	u8 cmd_idx, rsp_code, send_cmd12 = 0, standby = 0, acmd = 0;
@@ -943,16 +942,16 @@ int rts51x_sd_execute_write_data(struct scsi_cmnd *srb, struct rts51x_chip *chip
 		acmd = 1;
 
 	data_len =
-	    ((u32) srb->cmnd[7] << 16) | ((u32) srb->cmnd[8] << 8) |
+	    ((u32)srb->cmnd[7] << 16) | ((u32) srb->cmnd[8] << 8) |
 	    srb->cmnd[9];
 	arg =
-	    ((u32) srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
-	    ((u32) srb->cmnd[5] << 8) | srb->cmnd[6];
+	    ((u32)srb->cmnd[3] << 24) | ((u32) srb->cmnd[4] << 16) |
+	    ((u32)srb->cmnd[5] << 8) | srb->cmnd[6];
 	rsp_code = srb->cmnd[10];
 
 	retval =
 	    ext_rts51x_sd_execute_write_data(chip, lun, cmd_idx, send_cmd12, standby,
-				      acmd, rsp_code, arg, data_len,
+					     acmd, rsp_code, arg, data_len,
 				      scsi_sglist(srb), scsi_bufflen(srb),
 				      scsi_sg_count(srb));
 	scsi_set_resid(srb, 0);
@@ -961,7 +960,7 @@ int rts51x_sd_execute_write_data(struct scsi_cmnd *srb, struct rts51x_chip *chip
 
 int rts51x_sd_get_cmd_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	unsigned int lun = SCSI_LUN(srb);
 	int count;
 	u16 data_len;
@@ -977,7 +976,7 @@ int rts51x_sd_get_cmd_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 		TRACE_RET(chip, TRANSPORT_FAILED);
 	}
 
-	data_len = ((u16) srb->cmnd[7] << 8) | srb->cmnd[8];
+	data_len = ((u16)srb->cmnd[7] << 8) | srb->cmnd[8];
 
 	if (sd_card->last_rsp_type == SD_RSP_TYPE_R0) {
 		rts51x_set_sense_type(chip, lun, SENSE_TYPE_MEDIA_INVALID_CMD_FIELD);
@@ -991,7 +990,7 @@ int rts51x_sd_get_cmd_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 
 	RTS51X_DEBUGP("Response length: %d\n", data_len);
 	RTS51X_DEBUGP("Response: 0x%x 0x%x 0x%x 0x%x\n",
-		       sd_card->rsp[0], sd_card->rsp[1], sd_card->rsp[2],
+		      sd_card->rsp[0], sd_card->rsp[1], sd_card->rsp[2],
 		       sd_card->rsp[3]);
 
 	scsi_set_resid(srb, 0);
@@ -1000,7 +999,7 @@ int rts51x_sd_get_cmd_rsp(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 
 int rts51x_sd_hw_rst(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 {
-	struct sd_info *sd_card = &(chip->sd_card);
+	struct sd_info *sd_card = &chip->sd_card;
 	unsigned int lun = SCSI_LUN(srb);
 	int retval;
 
@@ -1015,10 +1014,10 @@ int rts51x_sd_hw_rst(struct scsi_cmnd *srb, struct rts51x_chip *chip)
 		TRACE_RET(chip, TRANSPORT_FAILED);
 	}
 
-	if ((0x53 != srb->cmnd[2]) || (0x44 != srb->cmnd[3])
-	    || (0x20 != srb->cmnd[4]) || (0x43 != srb->cmnd[5])
-	    || (0x61 != srb->cmnd[6]) || (0x72 != srb->cmnd[7])
-	    || (0x64 != srb->cmnd[8])) {
+	if ((0x53 != srb->cmnd[2]) || (srb->cmnd[3] != 0x44) ||
+	    (0x20 != srb->cmnd[4]) || (srb->cmnd[5] != 0x43) ||
+	    (0x61 != srb->cmnd[6]) || (srb->cmnd[7] != 0x72) ||
+	    (srb->cmnd[8] != 0x64)) {
 		rts51x_set_sense_type(chip, lun, SENSE_TYPE_MEDIA_INVALID_CMD_FIELD);
 		TRACE_RET(chip, TRANSPORT_FAILED);
 	}

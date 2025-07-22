@@ -58,20 +58,20 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION(DRIVER_VERSION);
 
 static int auto_delink_en;
-module_param(auto_delink_en, int, S_IRUGO | S_IWUSR);
+module_param(auto_delink_en, int, 0644);
 MODULE_PARM_DESC(auto_delink_en, "enable auto delink");
 
 static int ss_en;
-module_param(ss_en, int, S_IRUGO | S_IWUSR);
+module_param(ss_en, int, 0644);
 MODULE_PARM_DESC(ss_en, "enable selective suspend");
 
 static int ss_delay = 50;
-module_param(ss_delay, int, S_IRUGO | S_IWUSR);
+module_param(ss_delay, int, 0644);
 MODULE_PARM_DESC(ss_delay,
 		 "seconds to delay before entering selective suspend");
 
 static int needs_remote_wakeup;
-module_param(needs_remote_wakeup, int, S_IRUGO | S_IWUSR);
+module_param(needs_remote_wakeup, int, 0644);
 MODULE_PARM_DESC(needs_remote_wakeup, "ss state needs remote wakeup supported");
 
 #ifdef SUPPORT_FILE_OP
@@ -153,7 +153,6 @@ int rts51x_resume(struct usb_interface *iface)
 {
 	struct rts51x_chip *chip = usb_get_intfdata(iface);
 
-	pr_debug("%s\n", __func__);
 
 	if (!RTS51X_CHK_STAT(chip, STAT_SS) || !chip->resume_from_scsi) {
 		mutex_lock(&chip->usb->dev_mutex);
@@ -181,7 +180,6 @@ int rts51x_reset_resume(struct usb_interface *iface)
 {
 	struct rts51x_chip *chip = usb_get_intfdata(iface);
 
-	pr_debug("%s\n", __func__);
 
 	mutex_lock(&chip->usb->dev_mutex);
 
@@ -221,7 +219,6 @@ static int rts51x_pre_reset(struct usb_interface *iface)
 {
 	struct rts51x_chip *chip = usb_get_intfdata(iface);
 
-	pr_debug("%s\n", __func__);
 
 	/* Make sure no command runs during the reset */
 	mutex_lock(&chip->usb->dev_mutex);
@@ -232,7 +229,6 @@ static int rts51x_post_reset(struct usb_interface *iface)
 {
 	struct rts51x_chip *chip = usb_get_intfdata(iface);
 
-	pr_debug("%s\n", __func__);
 
 	/* Report the reset to the SCSI core */
 	/* usb_stor_report_bus_reset(us); */
@@ -259,13 +255,13 @@ static int rts51x_control_thread(void *__chip)
 		}
 
 		/* lock the device pointers */
-		mutex_lock(&(chip->usb->dev_mutex));
+		mutex_lock(&chip->usb->dev_mutex);
 
 		/* lock access to the state */
 		scsi_lock(host);
 
 		/* When we are called with no command pending, we're done */
-		if (chip->srb == NULL) {
+		if (!chip->srb) {
 			scsi_unlock(host);
 			mutex_unlock(&chip->usb->dev_mutex);
 			pr_debug("-- exiting from control thread\n");
@@ -327,7 +323,7 @@ abort :
 		 * the timeout might have occurred after the command had
 		 * already completed with a different result code. */
 		if (test_bit(FLIDX_TIMED_OUT, &chip->usb->dflags)) {
-			complete(&(chip->usb->notify));
+			complete(&chip->usb->notify);
 
 			/* Allow USB transfers to resume */
 			clear_bit(FLIDX_ABORTING, &chip->usb->dflags);
@@ -401,7 +397,7 @@ static int rts51x_polling_thread(void *__chip)
 		rts51x_mspro_polling_format_status(chip);
 
 		/* lock the device pointers */
-		mutex_lock(&(chip->usb->dev_mutex));
+		mutex_lock(&chip->usb->dev_mutex);
 
 		rts51x_polling_func(chip);
 
@@ -475,7 +471,7 @@ static int associate_dev(struct rts51x_chip *chip, struct usb_interface *intf)
 
 static void rts51x_init_options(struct rts51x_chip *chip)
 {
-	struct rts51x_option *option = &(chip->option);
+	struct rts51x_option *option = &chip->option;
 
 	option->rts51x_mspro_formatter_enable = 1;
 
@@ -743,11 +739,11 @@ static int rts51x_probe(struct usb_interface *intf,
 	chip->vendor_id = id->idVendor;
 	chip->product_id = id->idProduct;
 
-	mutex_init(&(rts51x->dev_mutex));
+	mutex_init(&rts51x->dev_mutex);
 	init_completion(&rts51x->cmnd_ready);
 	init_completion(&rts51x->control_exit);
 	init_completion(&rts51x->polling_exit);
-	init_completion(&(rts51x->notify));
+	init_completion(&rts51x->notify);
 
 	chip->usb = rts51x;
 

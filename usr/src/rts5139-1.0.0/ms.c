@@ -40,14 +40,14 @@
 
 static inline void ms_set_err_code(struct rts51x_chip *chip, u8 err_code)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 
 	ms_card->err_code = err_code;
 }
 
 static inline int ms_check_err_code(struct rts51x_chip *chip, u8 err_code)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 
 	return ms_card->err_code == err_code;
 }
@@ -60,7 +60,7 @@ static int ms_parse_err_code(struct rts51x_chip *chip)
 static int ms_transfer_tpc(struct rts51x_chip *chip, u8 trans_mode, u8 tpc,
 			   u8 cnt, u8 cfg)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	RTS51X_DEBUGP("ms_transfer_tpc: tpc = 0x%x\n", tpc);
@@ -120,7 +120,7 @@ int ms_transfer_data(struct rts51x_chip *chip, u8 trans_mode, u8 tpc,
 		     u16 sec_cnt, u8 cfg, int mode_2k, int use_sg, void *buf,
 		     int buf_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 val, err_code = 0, flag = 0;
 	enum dma_data_direction dir;
@@ -147,9 +147,9 @@ int ms_transfer_data(struct rts51x_chip *chip, u8 trans_mode, u8 tpc,
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TPC, 0xFF, tpc);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_H, 0xFF,
-		       (u8) (sec_cnt >> 8));
+		       (u8)(sec_cnt >> 8));
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_L, 0xFF,
-		       (u8) sec_cnt);
+		       (u8)sec_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TRANS_CFG, 0xFF, cfg);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
 		       RING_BUFFER);
@@ -198,7 +198,7 @@ int ms_transfer_data(struct rts51x_chip *chip, u8 trans_mode, u8 tpc,
 int ms_write_bytes(struct rts51x_chip *chip, u8 tpc, u8 cnt, u8 cfg, u8 *data,
 		   int data_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 
 	if (!data || (data_len < cnt))
@@ -212,7 +212,7 @@ int ms_write_bytes(struct rts51x_chip *chip, u8 tpc, u8 cnt, u8 cfg, u8 *data,
 	}
 	if (cnt % 2)
 		rts51x_add_cmd(chip, WRITE_REG_CMD, PPBUF_BASE2 + i,
-				0xFF, 0xFF);
+			       0xFF, 0xFF);
 
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TPC, 0xFF, tpc);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_BYTE_CNT, 0xFF, cnt);
@@ -270,7 +270,7 @@ int ms_write_bytes(struct rts51x_chip *chip, u8 tpc, u8 cnt, u8 cfg, u8 *data,
 int ms_read_bytes(struct rts51x_chip *chip, u8 tpc, u8 cnt, u8 cfg, u8 *data,
 		  int data_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 
 	if (!data)
@@ -483,7 +483,7 @@ static int ms_auto_set_cmd(struct rts51x_chip *chip,
 
 static int ms_set_init_para(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	if (CHK_HG8BIT(ms_card)) {
@@ -516,7 +516,7 @@ static int ms_set_init_para(struct rts51x_chip *chip)
 
 int ms_switch_clock(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	retval = rts51x_select_card(chip, MS_CARD);
@@ -570,7 +570,7 @@ static void ms_pull_ctl_enable(struct rts51x_chip *chip)
 
 static int ms_prepare_reset(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	ms_card->ms_type = 0;
@@ -607,13 +607,13 @@ static int ms_prepare_reset(struct rts51x_chip *chip)
 		wait_timeout(150);
 
 #ifdef SUPPORT_OCP
-		rts51x_get_card_status(chip, &(chip->card_status));
+		rts51x_get_card_status(chip, &chip->card_status);
 		/* get OCP status */
 		chip->ocp_stat = (chip->card_status >> 4) & 0x03;
 
 		if (chip->ocp_stat & (MS_OCP_NOW | MS_OCP_EVER)) {
 			RTS51X_DEBUGP("Over current, OCPSTAT is 0x%x\n",
-				       chip->ocp_stat);
+				      chip->ocp_stat);
 			TRACE_RET(chip, STATUS_FAIL);
 		}
 #endif
@@ -646,7 +646,7 @@ static int ms_prepare_reset(struct rts51x_chip *chip)
 
 static int ms_identify_media_type(struct rts51x_chip *chip, int switch_8bit_bus)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 val;
 
@@ -783,7 +783,7 @@ static int ms_switch_parallel_bus(struct rts51x_chip *chip)
 
 static int ms_switch_8bit_bus(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 data[2];
 
@@ -819,7 +819,7 @@ static int ms_switch_8bit_bus(struct rts51x_chip *chip)
 
 static int ms_pro_reset_flow(struct rts51x_chip *chip, int switch_8bit_bus)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 
 	for (i = 0; i < 3; i++) {
@@ -905,7 +905,7 @@ static int msxc_change_power(struct rts51x_chip *chip, u8 mode)
 
 static int ms_read_attribute_info(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 val, *buf, class_code, device_type, sub_class, data[16];
 	u16 total_blk = 0, blk_size = 0;
@@ -947,7 +947,7 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 		TRACE_RET(chip, retval);
 
 	buf = kmalloc(64 * 512, GFP_KERNEL);
-	if (buf == NULL)
+	if (!buf)
 		TRACE_RET(chip, STATUS_NOMEM);
 
 	for (i = 0; i < MS_MAX_RETRY_COUNT; i++) {
@@ -1020,22 +1020,22 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 		int cur_addr_off = 16 + i * 12;
 
 #ifdef SUPPORT_MSXC
-		if ((buf[cur_addr_off + 8] == 0x10)
-		    || (buf[cur_addr_off + 8] == 0x13)) {
+		if ((buf[cur_addr_off + 8] == 0x10) ||
+		    (buf[cur_addr_off + 8] == 0x13)) {
 #else
 		if (buf[cur_addr_off + 8] == 0x10) {
 #endif
-			sys_info_addr = ((u32) buf[cur_addr_off + 0] << 24) |
-			    ((u32) buf[cur_addr_off + 1] << 16) |
-			    ((u32) buf[cur_addr_off + 2] << 8) |
+			sys_info_addr = ((u32)buf[cur_addr_off + 0] << 24) |
+			    ((u32)buf[cur_addr_off + 1] << 16) |
+			    ((u32)buf[cur_addr_off + 2] << 8) |
 			    buf[cur_addr_off + 3];
 			sys_info_size =
-			    ((u32) buf[cur_addr_off + 4] << 24) |
-			    ((u32) buf[cur_addr_off + 5] << 16) |
-			    ((u32) buf[cur_addr_off + 6] << 8) |
+			    ((u32)buf[cur_addr_off + 4] << 24) |
+			    ((u32)buf[cur_addr_off + 5] << 16) |
+			    ((u32)buf[cur_addr_off + 6] << 8) |
 			    buf[cur_addr_off + 7];
 			RTS51X_DEBUGP("sys_info_addr = 0x%x, sys_info_size = 0x%x\n",
-						sys_info_addr, sys_info_size);
+				      sys_info_addr, sys_info_size);
 			if (sys_info_size != 96) {
 				kfree(buf);
 				TRACE_RET(chip, STATUS_FAIL);
@@ -1060,17 +1060,17 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 		}
 #ifdef SUPPORT_PCGL_1P18
 		if (buf[cur_addr_off + 8] == 0x15) {
-			model_name_addr = ((u32) buf[cur_addr_off + 0] << 24) |
-			    ((u32) buf[cur_addr_off + 1] << 16) |
-			    ((u32) buf[cur_addr_off + 2] << 8) |
+			model_name_addr = ((u32)buf[cur_addr_off + 0] << 24) |
+			    ((u32)buf[cur_addr_off + 1] << 16) |
+			    ((u32)buf[cur_addr_off + 2] << 8) |
 			    buf[cur_addr_off + 3];
 			model_name_size =
-			    ((u32) buf[cur_addr_off + 4] << 24) |
-			    ((u32) buf[cur_addr_off + 5] << 16) |
-			    ((u32) buf[cur_addr_off + 6] << 8) |
+			    ((u32)buf[cur_addr_off + 4] << 24) |
+			    ((u32)buf[cur_addr_off + 5] << 16) |
+			    ((u32)buf[cur_addr_off + 6] << 8) |
 			    buf[cur_addr_off + 7];
 			RTS51X_DEBUGP("model_name_addr = 0x%x, model_name_size = 0x%x\n",
-					model_name_addr, model_name_size);
+				      model_name_addr, model_name_size);
 			if (model_name_size != 48) {
 				kfree(buf);
 				TRACE_RET(chip, STATUS_FAIL);
@@ -1102,36 +1102,35 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 	sub_class = buf[sys_info_addr + 46];
 #ifdef SUPPORT_MSXC
 	if (CHK_MSXC(ms_card)) {
-		xc_total_blk = ((u32) buf[sys_info_addr + 6] << 24) |
-		    ((u32) buf[sys_info_addr + 7] << 16) |
-		    ((u32) buf[sys_info_addr + 8] << 8) |
+		xc_total_blk = ((u32)buf[sys_info_addr + 6] << 24) |
+		    ((u32)buf[sys_info_addr + 7] << 16) |
+		    ((u32)buf[sys_info_addr + 8] << 8) |
 		    buf[sys_info_addr + 9];
-		xc_blk_size = ((u32) buf[sys_info_addr + 32] << 24) |
-		    ((u32) buf[sys_info_addr + 33] << 16) |
-		    ((u32) buf[sys_info_addr + 34] << 8) |
+		xc_blk_size = ((u32)buf[sys_info_addr + 32] << 24) |
+		    ((u32)buf[sys_info_addr + 33] << 16) |
+		    ((u32)buf[sys_info_addr + 34] << 8) |
 		    buf[sys_info_addr + 35];
 		RTS51X_DEBUGP("xc_total_blk = 0x%x, xc_blk_size = 0x%x\n",
-			       xc_total_blk, xc_blk_size);
+			      xc_total_blk, xc_blk_size);
 	} else {
 		total_blk =
-		    ((u16) buf[sys_info_addr + 6] << 8) | buf[sys_info_addr +
+		    ((u16)buf[sys_info_addr + 6] << 8) | buf[sys_info_addr +
 							      7];
 		blk_size =
-		    ((u16) buf[sys_info_addr + 2] << 8) | buf[sys_info_addr +
+		    ((u16)buf[sys_info_addr + 2] << 8) | buf[sys_info_addr +
 							      3];
 		RTS51X_DEBUGP("total_blk = 0x%x, blk_size = 0x%x\n", total_blk,
-			       blk_size);
+			      blk_size);
 	}
 #else
 	total_blk =
-	    ((u16) buf[sys_info_addr + 6] << 8) | buf[sys_info_addr + 7];
-	blk_size = ((u16) buf[sys_info_addr + 2] << 8) | buf[sys_info_addr + 3];
+	    ((u16)buf[sys_info_addr + 6] << 8) | buf[sys_info_addr + 7];
+	blk_size = ((u16)buf[sys_info_addr + 2] << 8) | buf[sys_info_addr + 3];
 	RTS51X_DEBUGP("total_blk = 0x%x, blk_size = 0x%x\n", total_blk,
-		       blk_size);
+		      blk_size);
 #endif
 
-	RTS51X_DEBUGP("class_code = 0x%x, device_type = 0x%x,"
-			"sub_class = 0x%x\n",
+	RTS51X_DEBUGP("class_code = 0x%x, device_type = 0x%x,sub_class = 0x%x\n",
 				class_code, device_type, sub_class);
 
 	memcpy(ms_card->raw_sys_info, buf + sys_info_addr, 96);
@@ -1156,8 +1155,8 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 #endif
 
 	if (device_type != 0x00) {
-		if ((device_type == 0x01) || (device_type == 0x02)
-		    || (device_type == 0x03))
+		if ((device_type == 0x01) || (device_type == 0x02) ||
+		    (device_type == 0x03))
 			chip->card_wp |= MS_CARD;
 		else
 			TRACE_RET(chip, STATUS_FAIL);
@@ -1166,7 +1165,7 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 		TRACE_RET(chip, STATUS_FAIL);
 
 	RTS51X_DEBUGP("class_code: 0x%x, device_type: 0x%x, sub_class: 0x%x\n",
-		       class_code, device_type, sub_class);
+		      class_code, device_type, sub_class);
 
 #ifdef SUPPORT_MSXC
 	if (CHK_MSXC(ms_card)) {
@@ -1186,7 +1185,7 @@ static int ms_read_attribute_info(struct rts51x_chip *chip)
 
 static int reset_ms_pro(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 #ifdef XC_POWERCLASS
 	u8 change_power_class = 2;
@@ -1215,6 +1214,7 @@ Retry:
 
 	if (change_power_class && CHK_MSXC(ms_card)) {
 		u8 power_class_mode = (ms_card->raw_sys_info[46] & 0x18) >> 3;
+
 		RTS51X_DEBUGP("power_class_mode = 0x%x", power_class_mode);
 		if (change_power_class > power_class_mode)
 			change_power_class = power_class_mode;
@@ -1264,7 +1264,7 @@ static int ms_read_status_reg(struct rts51x_chip *chip)
 
 static int ms_check_boot_block(struct rts51x_chip *chip, u16 block_addr)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 extra[MS_EXTRA_SIZE], data[10], val = 0;
 
@@ -1277,8 +1277,8 @@ static int ms_check_boot_block(struct rts51x_chip *chip, u16 block_addr)
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (block_addr >> 8);
-	data[3] = (u8) block_addr;
+	data[2] = (u8)(block_addr >> 8);
+	data[3] = (u8)block_addr;
 	/* Page Number
 	 * Extra data access mode */
 	data[4] = 0x40;
@@ -1322,7 +1322,7 @@ static int ms_read_extra_data(struct rts51x_chip *chip,
 			      u16 block_addr, u8 page_num, u8 *buf,
 			      int buf_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 val = 0, data[10];
 
@@ -1335,8 +1335,8 @@ static int ms_read_extra_data(struct rts51x_chip *chip,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (block_addr >> 8);
-	data[3] = (u8) block_addr;
+	data[2] = (u8)(block_addr >> 8);
+	data[3] = (u8)block_addr;
 	/* Page Number
 	 * Extra data access mode */
 	data[4] = 0x40;
@@ -1389,7 +1389,7 @@ static int ms_write_extra_data(struct rts51x_chip *chip,
 			       u16 block_addr, u8 page_num, u8 *buf,
 			       int buf_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 val = 0, data[16];
 
@@ -1405,8 +1405,8 @@ static int ms_write_extra_data(struct rts51x_chip *chip,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (block_addr >> 8);
-	data[3] = (u8) block_addr;
+	data[2] = (u8)(block_addr >> 8);
+	data[3] = (u8)block_addr;
 	/* Page Number
 	 * Extra data access mode */
 	data[4] = 0x40;
@@ -1445,7 +1445,7 @@ static int ms_write_extra_data(struct rts51x_chip *chip,
 
 static int ms_read_page(struct rts51x_chip *chip, u16 block_addr, u8 page_num)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 val = 0, data[6];
 
@@ -1458,8 +1458,8 @@ static int ms_read_page(struct rts51x_chip *chip, u16 block_addr, u8 page_num)
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (block_addr >> 8);
-	data[3] = (u8) block_addr;
+	data[2] = (u8)(block_addr >> 8);
+	data[3] = (u8)block_addr;
 	/* Page Number
 	 * Single page access mode */
 	data[4] = 0x20;
@@ -1505,7 +1505,7 @@ static int ms_read_page(struct rts51x_chip *chip, u16 block_addr, u8 page_num)
 
 static int ms_set_bad_block(struct rts51x_chip *chip, u16 phy_blk)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 val = 0, data[8], extra[MS_EXTRA_SIZE];
 
@@ -1524,8 +1524,8 @@ static int ms_set_bad_block(struct rts51x_chip *chip, u16 phy_blk)
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (phy_blk >> 8);
-	data[3] = (u8) phy_blk;
+	data[2] = (u8)(phy_blk >> 8);
+	data[3] = (u8)phy_blk;
 	data[4] = 0x80;
 	data[5] = 0;
 	data[6] = extra[0] & 0x7F;
@@ -1558,7 +1558,7 @@ static int ms_set_bad_block(struct rts51x_chip *chip, u16 phy_blk)
 
 static int ms_erase_block(struct rts51x_chip *chip, u16 phy_blk)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i = 0;
 	u8 val = 0, data[6];
 
@@ -1579,8 +1579,8 @@ static int ms_erase_block(struct rts51x_chip *chip, u16 phy_blk)
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (phy_blk >> 8);
-	data[3] = (u8) phy_blk;
+	data[2] = (u8)(phy_blk >> 8);
+	data[3] = (u8)phy_blk;
 	data[4] = 0;
 	data[5] = 0;
 
@@ -1626,8 +1626,8 @@ static void ms_set_page_status(u16 log_blk, u8 type, u8 *extra, int extra_len)
 	else
 		extra[0] = 0x98;
 
-	extra[2] = (u8) (log_blk >> 8);
-	extra[3] = (u8) log_blk;
+	extra[2] = (u8)(log_blk >> 8);
+	extra[3] = (u8)log_blk;
 }
 
 static int ms_init_page(struct rts51x_chip *chip, u16 phy_blk, u16 log_blk,
@@ -1640,8 +1640,8 @@ static int ms_init_page(struct rts51x_chip *chip, u16 phy_blk, u16 log_blk,
 
 	extra[0] = 0xf8; /* Block, page OK, data erased */
 	extra[1] = 0xff;
-	extra[2] = (u8) (log_blk >> 8);
-	extra[3] = (u8) log_blk;
+	extra[2] = (u8)(log_blk >> 8);
+	extra[3] = (u8)log_blk;
 
 	for (i = start_page; i < end_page; i++) {
 		if (monitor_card_cd(chip, MS_CARD) == CD_NOT_EXIST)
@@ -1659,14 +1659,14 @@ static int ms_init_page(struct rts51x_chip *chip, u16 phy_blk, u16 log_blk,
 static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 			u16 log_blk, u8 start_page, u8 end_page)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, rty_cnt, uncorrect_flag = 0;
 	u8 extra[MS_EXTRA_SIZE], val, i, j, data[16];
 
 	RTS51X_DEBUGP("Copy page from 0x%x to 0x%x, logical block is 0x%x\n",
-		       old_blk, new_blk, log_blk);
+		      old_blk, new_blk, log_blk);
 	RTS51X_DEBUGP("start_page = %d, end_page = %d\n", start_page,
-		       end_page);
+		      end_page);
 
 	retval = ms_read_extra_data(chip, new_blk, 0, extra, MS_EXTRA_SIZE);
 	if (retval != STATUS_SUCCESS)
@@ -1717,8 +1717,8 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 		}
 		/* Block Address */
 		data[1] = 0;
-		data[2] = (u8) (old_blk >> 8);
-		data[3] = (u8) old_blk;
+		data[2] = (u8)(old_blk >> 8);
+		data[3] = (u8)old_blk;
 		data[4] = 0x20;
 		data[5] = i;
 
@@ -1753,25 +1753,25 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 
 				retval =
 				    ms_transfer_tpc(chip, MS_TM_NORMAL_READ,
-					READ_PAGE_DATA, 0, NO_WAIT_INT);
+						    READ_PAGE_DATA, 0, NO_WAIT_INT);
 				if (retval != STATUS_SUCCESS)
 					TRACE_RET(chip, retval);
 				if (uncorrect_flag) {
 					ms_set_page_status(log_blk, setPS_NG,
-						extra, MS_EXTRA_SIZE);
+							   extra, MS_EXTRA_SIZE);
 					if (i == 0)
 						extra[0] &= 0xEF;
 					ms_write_extra_data(chip, old_blk, i,
 							    extra,
 							    MS_EXTRA_SIZE);
 					RTS51X_DEBUGP("page %d : extra[0] = 0x%x\n",
-							i, extra[0]);
+						      i, extra[0]);
 					MS_SET_BAD_BLOCK_FLG(ms_card);
 
 					ms_set_page_status(log_blk, setPS_Error,
-							extra, MS_EXTRA_SIZE);
+							   extra, MS_EXTRA_SIZE);
 					ms_write_extra_data(chip, new_blk, i,
-						extra, MS_EXTRA_SIZE);
+							    extra, MS_EXTRA_SIZE);
 					continue;
 				}
 
@@ -1811,8 +1811,8 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 		}
 		/* Block Address */
 		data[1] = 0;
-		data[2] = (u8) (new_blk >> 8);
-		data[3] = (u8) new_blk;
+		data[2] = (u8)(new_blk >> 8);
+		data[3] = (u8)new_blk;
 		data[4] = 0x20;
 		data[5] = i;
 
@@ -1823,8 +1823,8 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 			data[6] = 0xF8;
 
 		data[6 + 1] = 0xFF;
-		data[6 + 2] = (u8) (log_blk >> 8);
-		data[6 + 3] = (u8) log_blk;
+		data[6 + 2] = (u8)(log_blk >> 8);
+		data[6 + 3] = (u8)log_blk;
 
 		for (j = 4; j <= MS_EXTRA_SIZE; j++)
 			data[6 + j] = 0xFF;
@@ -1874,8 +1874,8 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 			}
 			/* Block Address */
 			data[1] = 0;
-			data[2] = (u8) (old_blk >> 8);
-			data[3] = (u8) old_blk;
+			data[2] = (u8)(old_blk >> 8);
+			data[3] = (u8)old_blk;
 			data[4] = 0x80;
 			data[5] = 0;
 			data[6] = 0xEF;
@@ -1920,15 +1920,15 @@ static int ms_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 static int ms_auto_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 			     u16 log_blk, u8 start_page, u8 end_page)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u8 page_len, bus_width, val = 0;
 	u8 extra[MS_EXTRA_SIZE];
 
 	RTS51X_DEBUGP("Auto copy page from 0x%x to 0x%x, logical block is 0x%x\n",
-				old_blk, new_blk, log_blk);
+		      old_blk, new_blk, log_blk);
 	RTS51X_DEBUGP("start_page = %d, end_page = %d\n", start_page,
-		       end_page);
+		      end_page);
 
 	page_len = end_page - start_page;
 
@@ -1967,15 +1967,15 @@ static int ms_auto_copy_page(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 
 	rts51x_init_cmd(chip);
 
-	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_OLD_BLOCK_0, 0xFF, (u8) old_blk);
+	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_OLD_BLOCK_0, 0xFF, (u8)old_blk);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_OLD_BLOCK_1, 0xFF,
-		       (u8) (old_blk >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_NEW_BLOCK_0, 0xFF, (u8) new_blk);
+		       (u8)(old_blk >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_NEW_BLOCK_0, 0xFF, (u8)new_blk);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_NEW_BLOCK_1, 0xFF,
-		       (u8) (new_blk >> 8));
-	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_LOG_BLOCK_0, 0xFF, (u8) log_blk);
+		       (u8)(new_blk >> 8));
+	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_LOG_BLOCK_0, 0xFF, (u8)log_blk);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_LOG_BLOCK_1, 0xFF,
-		       (u8) (log_blk >> 8));
+		       (u8)(log_blk >> 8));
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_PAGE_START, 0xFF, start_page);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_PAGE_LENGTH, 0xFF, page_len);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_BUS_WIDTH, 0xFF, bus_width);
@@ -2018,7 +2018,7 @@ Fail:
 
 static int reset_ms(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	u16 i, reg_addr, block_size;
 	u8 val, j, *ptr;
@@ -2130,7 +2130,7 @@ RE_SEARCH:
 	}
 	if ((ptr[14] == 1) || (ptr[14] == 3))
 		chip->card_wp |= MS_CARD;
-	block_size = ((u16) ptr[6] << 8) | ptr[7];
+	block_size = ((u16)ptr[6] << 8) | ptr[7];
 	if (block_size == 0x0010) {
 		ms_card->block_shift = 5;
 		ms_card->page_off = 0x1F;
@@ -2138,7 +2138,7 @@ RE_SEARCH:
 		ms_card->block_shift = 4;
 		ms_card->page_off = 0x0F;
 	}
-	ms_card->total_block = ((u16) ptr[8] << 8) | ptr[9];
+	ms_card->total_block = ((u16)ptr[8] << 8) | ptr[9];
 
 #ifdef SUPPORT_MAGIC_GATE
 	j = ptr[10];
@@ -2159,9 +2159,9 @@ RE_SEARCH:
 			ms_card->capacity = 0x3DF00;
 	}
 #else
-	eblock_cnt = ((u16) ptr[10] << 8) | ptr[11];
+	eblock_cnt = ((u16)ptr[10] << 8) | ptr[11];
 
-	ms_card->capacity = ((u32) eblock_cnt - 2) << ms_card->block_shift;
+	ms_card->capacity = ((u32)eblock_cnt - 2) << ms_card->block_shift;
 #endif
 
 	chip->capacity[chip->card2lun[MS_CARD]] = ms_card->capacity;
@@ -2195,7 +2195,7 @@ RE_SEARCH:
 
 static int ms_init_l2p_tbl(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int size, i, seg_no, retval;
 	u16 defect_block, reg_addr;
 	u8 val1, val2;
@@ -2205,7 +2205,7 @@ static int ms_init_l2p_tbl(struct rts51x_chip *chip)
 
 	size = ms_card->segment_cnt * sizeof(struct zone_entry);
 	ms_card->segment = vmalloc(size);
-	if (ms_card->segment == NULL)
+	if (!ms_card->segment)
 		TRACE_RET(chip, STATUS_FAIL);
 	memset(ms_card->segment, 0, size);
 
@@ -2222,7 +2222,7 @@ static int ms_init_l2p_tbl(struct rts51x_chip *chip)
 		if (retval != STATUS_SUCCESS)
 			TRACE_GOTO(chip, INIT_FAIL);
 
-		defect_block = ((u16) val1 << 8) | val2;
+		defect_block = ((u16)val1 << 8) | val2;
 		if (defect_block == 0xFFFF)
 			break;
 		seg_no = defect_block / 512;
@@ -2240,7 +2240,7 @@ static int ms_init_l2p_tbl(struct rts51x_chip *chip)
 		ms_card->segment[i].unused_blk_cnt = 0;
 
 		RTS51X_DEBUGP("defective block count of segment %d is %d\n",
-			       i, ms_card->segment[i].disable_count);
+			      i, ms_card->segment[i].disable_count);
 	}
 
 	return STATUS_SUCCESS;
@@ -2256,13 +2256,13 @@ INIT_FAIL:
 
 static u16 ms_get_l2p_tbl(struct rts51x_chip *chip, int seg_no, u16 log_off)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 
-	if (ms_card->segment == NULL)
+	if (!ms_card->segment)
 		return 0xFFFF;
 
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 
 	if (segment->l2p_table)
 		return segment->l2p_table[log_off];
@@ -2273,25 +2273,25 @@ static u16 ms_get_l2p_tbl(struct rts51x_chip *chip, int seg_no, u16 log_off)
 static void ms_set_l2p_tbl(struct rts51x_chip *chip, int seg_no, u16 log_off,
 			   u16 phy_blk)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 
-	if (ms_card->segment == NULL)
+	if (!ms_card->segment)
 		return;
 
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 	if (segment->l2p_table)
 		segment->l2p_table[log_off] = phy_blk;
 }
 
 static void ms_set_unused_block(struct rts51x_chip *chip, u16 phy_blk)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 	int seg_no;
 
 	seg_no = (int)phy_blk >> 9;
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 
 	segment->free_table[segment->set_index++] = phy_blk;
 	if (segment->set_index >= MS_FREE_TABLE_CNT)
@@ -2301,11 +2301,11 @@ static void ms_set_unused_block(struct rts51x_chip *chip, u16 phy_blk)
 
 static u16 ms_get_unused_block(struct rts51x_chip *chip, int seg_no)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 	u16 phy_blk;
 
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 
 	if (segment->unused_blk_cnt <= 0)
 		return 0xFFFF;
@@ -2327,13 +2327,13 @@ static const unsigned short ms_start_idx[] = {
 static int ms_arbitrate_l2p(struct rts51x_chip *chip, u16 phy_blk, u16 log_off,
 			    u8 us1, u8 us2)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 	int seg_no;
 	u16 tmp_blk;
 
 	seg_no = (int)phy_blk >> 9;
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 	tmp_blk = segment->l2p_table[log_off];
 
 	if (us1 != us2) {
@@ -2365,7 +2365,7 @@ static int ms_arbitrate_l2p(struct rts51x_chip *chip, u16 phy_blk, u16 log_off,
 
 static int ms_build_l2p_tbl(struct rts51x_chip *chip, int seg_no)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	struct zone_entry *segment;
 	int retval, table_size, disable_cnt, defect_flag, i;
 	u16 start, end, phy_blk, log_blk, tmp_blk;
@@ -2373,7 +2373,7 @@ static int ms_build_l2p_tbl(struct rts51x_chip *chip, int seg_no)
 
 	RTS51X_DEBUGP("ms_build_l2p_tbl: %d\n", seg_no);
 
-	if (ms_card->segment == NULL) {
+	if (!ms_card->segment) {
 		retval = ms_init_l2p_tbl(chip);
 		if (retval != STATUS_SUCCESS)
 			TRACE_RET(chip, retval);
@@ -2381,7 +2381,7 @@ static int ms_build_l2p_tbl(struct rts51x_chip *chip, int seg_no)
 
 	if (ms_card->segment[seg_no].build_flag) {
 		RTS51X_DEBUGP("l2p table of segment %d has been built\n",
-			       seg_no);
+			      seg_no);
 		return STATUS_SUCCESS;
 	}
 
@@ -2390,24 +2390,24 @@ static int ms_build_l2p_tbl(struct rts51x_chip *chip, int seg_no)
 	else
 		table_size = 496;
 
-	segment = &(ms_card->segment[seg_no]);
+	segment = &ms_card->segment[seg_no];
 
-	if (segment->l2p_table == NULL) {
+	if (!segment->l2p_table) {
 		segment->l2p_table = vmalloc(table_size * 2);
-		if (segment->l2p_table == NULL)
+		if (!segment->l2p_table)
 			TRACE_GOTO(chip, BUILD_FAIL);
 	}
-	memset((u8 *) (segment->l2p_table), 0xff, table_size * 2);
+	memset((u8 *)(segment->l2p_table), 0xff, table_size * 2);
 
-	if (segment->free_table == NULL) {
+	if (!segment->free_table) {
 		segment->free_table = vmalloc(MS_FREE_TABLE_CNT * 2);
-		if (segment->free_table == NULL)
+		if (!segment->free_table)
 			TRACE_GOTO(chip, BUILD_FAIL);
 	}
-	memset((u8 *) (segment->free_table), 0xff, MS_FREE_TABLE_CNT * 2);
+	memset((u8 *)(segment->free_table), 0xff, MS_FREE_TABLE_CNT * 2);
 
-	start = (u16) seg_no << 9;
-	end = (u16) (seg_no + 1) << 9;
+	start = (u16)seg_no << 9;
+	end = (u16)(seg_no + 1) << 9;
 
 	disable_cnt = segment->disable_count;
 
@@ -2456,7 +2456,7 @@ static int ms_build_l2p_tbl(struct rts51x_chip *chip, int seg_no)
 		if ((extra[0] & PAGE_OK) != PAGE_OK)
 			continue;
 
-		log_blk = ((u16) extra[2] << 8) | extra[3];
+		log_blk = ((u16)extra[2] << 8) | extra[3];
 
 		if (log_blk == 0xFFFF) {
 			if (!(chip->card_wp & MS_CARD)) {
@@ -2593,7 +2593,7 @@ BUILD_FAIL:
 
 int rts51x_reset_ms_card(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	memset(ms_card, 0, sizeof(struct ms_info));
@@ -2614,7 +2614,7 @@ int rts51x_reset_ms_card(struct rts51x_chip *chip)
 			if (retval != STATUS_SUCCESS) {
 				if (chip->option.reset_or_rw_fail_set_pad_drive) {
 					rts51x_write_register(chip,
-						CARD_DRIVE_SEL, SD20_DRIVE_MASK,
+							      CARD_DRIVE_SEL, SD20_DRIVE_MASK,
 						DRIVE_8mA);
 				}
 				TRACE_RET(chip, retval);
@@ -2651,12 +2651,12 @@ static int mspro_set_rw_cmd(struct rts51x_chip *chip, u32 start_sec,
 	u8 data[8];
 
 	data[0] = cmd;
-	data[1] = (u8) (sec_cnt >> 8);
-	data[2] = (u8) sec_cnt;
-	data[3] = (u8) (start_sec >> 24);
-	data[4] = (u8) (start_sec >> 16);
-	data[5] = (u8) (start_sec >> 8);
-	data[6] = (u8) start_sec;
+	data[1] = (u8)(sec_cnt >> 8);
+	data[2] = (u8)sec_cnt;
+	data[3] = (u8)(start_sec >> 24);
+	data[4] = (u8)(start_sec >> 16);
+	data[5] = (u8)(start_sec >> 8);
+	data[6] = (u8)start_sec;
 	data[7] = 0;
 
 	for (i = 0; i < MS_MAX_RETRY_COUNT; i++) {
@@ -2673,7 +2673,7 @@ static int mspro_set_rw_cmd(struct rts51x_chip *chip, u32 start_sec,
 
 static void mspro_stop_seq_mode(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	if (ms_card->seq_mode) {
@@ -2693,7 +2693,7 @@ static void mspro_stop_seq_mode(struct rts51x_chip *chip)
 
 static inline int ms_auto_tune_clock(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	if (chip->asic_code) {
@@ -2717,7 +2717,7 @@ static int mspro_rw_multi_sector(struct scsi_cmnd *srb,
 				 struct rts51x_chip *chip, u32 start_sector,
 				 u16 sector_cnt)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, mode_2k = 0;
 	u16 count;
 	u8 val, trans_mode, rw_tpc, rw_cmd;
@@ -2767,13 +2767,13 @@ static int mspro_rw_multi_sector(struct scsi_cmnd *srb,
 	val = ms_card->last_rw_int;
 
 	if (ms_card->seq_mode) {
-		if ((ms_card->pre_dir != srb->sc_data_direction)
-		    || ((ms_card->pre_sec_addr + ms_card->pre_sec_cnt) !=
-			start_sector)
-		    || (mode_2k && (ms_card->seq_mode & MODE_512_SEQ))
-		    || (!mode_2k && (ms_card->seq_mode & MODE_2K_SEQ))
-		    || !(val & MS_INT_BREQ)
-		    || ((ms_card->total_sec_cnt + sector_cnt) > 0xFE00)) {
+		if ((ms_card->pre_dir != srb->sc_data_direction) ||
+		    ((ms_card->pre_sec_addr + ms_card->pre_sec_cnt) !=
+			start_sector) ||
+		    (mode_2k && (ms_card->seq_mode & MODE_512_SEQ)) ||
+		    (!mode_2k && (ms_card->seq_mode & MODE_2K_SEQ)) ||
+		    !(val & MS_INT_BREQ) ||
+		    ((ms_card->total_sec_cnt + sector_cnt) > 0xFE00)) {
 			ms_card->seq_mode = 0;
 			ms_card->total_sec_cnt = 0;
 			ms_card->last_rw_int = 0;
@@ -2783,7 +2783,7 @@ static int mspro_rw_multi_sector(struct scsi_cmnd *srb,
 					TRACE_RET(chip, retval);
 
 				rts51x_ep0_write_register(chip, MC_FIFO_CTL,
-					FIFO_FLUSH, FIFO_FLUSH);
+							  FIFO_FLUSH, FIFO_FLUSH);
 			}
 		}
 	}
@@ -2795,7 +2795,7 @@ static int mspro_rw_multi_sector(struct scsi_cmnd *srb,
 				count = 0xFE00;
 			else
 				count =
-				    (u16) (ms_card->capacity - start_sector);
+				    (u16)(ms_card->capacity - start_sector);
 			if (count > sector_cnt) {
 				if (mode_2k)
 					ms_card->seq_mode |= MODE_2K_SEQ;
@@ -2841,7 +2841,7 @@ static int mspro_rw_multi_sector(struct scsi_cmnd *srb,
 static int mspro_read_format_progress(struct rts51x_chip *chip,
 				      const int short_data_len)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u32 total_progress, cur_progress;
 	u8 cnt, tmp;
@@ -2870,7 +2870,7 @@ static int mspro_read_format_progress(struct rts51x_chip *chip,
 	if (short_data_len >= 256)
 		cnt = 0;
 	else
-		cnt = (u8) short_data_len;
+		cnt = (u8)short_data_len;
 
 	retval =
 	    ms_read_bytes(chip, PRO_READ_SHORT_DATA, cnt, WAIT_INT, data, 8);
@@ -2883,14 +2883,15 @@ static int mspro_read_format_progress(struct rts51x_chip *chip,
 	    (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
 
 	RTS51X_DEBUGP("total_progress = %d, cur_progress = %d\n",
-		       total_progress, cur_progress);
+		      total_progress, cur_progress);
 
 	if (total_progress == 0) {
 		ms_card->progress = 0;
 	} else {
-		u64 ulltmp = (u64) cur_progress * (u64) 65535;
+		u64 ulltmp = (u64)cur_progress * (u64) 65535;
+
 		do_div(ulltmp, total_progress);
-		ms_card->progress = (u16) ulltmp;
+		ms_card->progress = (u16)ulltmp;
 	}
 	RTS51X_DEBUGP("progress = %d\n", ms_card->progress);
 
@@ -2922,14 +2923,14 @@ static int mspro_read_format_progress(struct rts51x_chip *chip,
 	}
 
 	RTS51X_DEBUGP("MSPro format format_status:%d\n",
-		       ms_card->format_status);
+		      ms_card->format_status);
 
 	return STATUS_SUCCESS;
 }
 
 void rts51x_mspro_polling_format_status(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int i;
 
 	if (ms_card->pro_under_formatting) {
@@ -2945,7 +2946,7 @@ void rts51x_mspro_polling_format_status(struct rts51x_chip *chip)
 
 void rts51x_mspro_format_sense(struct rts51x_chip *chip, unsigned int lun)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 
 	if (CHK_FORMAT_STATUS(ms_card, FORMAT_SUCCESS)) {
 		rts51x_set_sense_type(chip, lun, SENSE_TYPE_NO_SENSE);
@@ -2953,7 +2954,7 @@ void rts51x_mspro_format_sense(struct rts51x_chip *chip, unsigned int lun)
 		ms_card->progress = 0;
 	} else if (CHK_FORMAT_STATUS(ms_card, FORMAT_IN_PROGRESS)) {
 		rts51x_set_sense_data(chip, lun, CUR_ERR, 0x02, 0, 0x04, 0x04,
-			       0, (u16) (ms_card->progress));
+				      0, (u16)(ms_card->progress));
 	} else {
 		rts51x_set_sense_type(chip, lun, SENSE_TYPE_FORMAT_CMD_FAILED);
 		ms_card->pro_under_formatting = 0;
@@ -2962,9 +2963,9 @@ void rts51x_mspro_format_sense(struct rts51x_chip *chip, unsigned int lun)
 }
 
 int rts51x_mspro_format(struct scsi_cmnd *srb, struct rts51x_chip *chip,
-		 int short_data_len, int quick_format)
+			int short_data_len, int quick_format)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 buf[8], tmp;
 	u16 para;
@@ -3038,7 +3039,7 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 				  u16 log_blk, u8 start_page, u8 end_page,
 				  u8 *buf, void **ptr, unsigned int *offset)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 	int send_blkend;
 	u8 extra[MS_EXTRA_SIZE], val1, val2, data[6];
@@ -3067,8 +3068,8 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (phy_blk >> 8);
-	data[3] = (u8) phy_blk;
+	data[2] = (u8)(phy_blk >> 8);
+	data[3] = (u8)phy_blk;
 	/* Page Number
 	 * Extra data access mode */
 	data[4] = 0;
@@ -3090,7 +3091,7 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TRANS_CFG, WAIT_INT,
 		       NO_WAIT_INT);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_L, 0xFF,
-		       (u8) page_cnt);
+		       (u8)page_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_H, 0xFF, 0);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TPC, 0xFF, READ_PAGE_DATA);
 
@@ -3141,7 +3142,7 @@ Fail:
 
 	sec_cnt = chip->rsp_buf[0];
 	RTS51X_DEBUGP("%d pages need be transferred, %d pages remained\n",
-		       (int)page_cnt, (int)sec_cnt);
+		      (int)page_cnt, (int)sec_cnt);
 	page_addr = start_page + (page_cnt - sec_cnt);
 
 	if (CHK_MS4BIT(ms_card)) {
@@ -3166,9 +3167,9 @@ Fail:
 				if (!(chip->card_wp & MS_CARD)) {
 					reset_ms(chip);
 					ms_set_page_status(log_blk, setPS_NG,
-						extra, MS_EXTRA_SIZE);
+							   extra, MS_EXTRA_SIZE);
 					ms_write_extra_data(chip, phy_blk,
-						page_addr, extra,
+							    page_addr, extra,
 						MS_EXTRA_SIZE);
 				}
 				ms_set_err_code(chip, MS_FLASH_READ_ERROR);
@@ -3200,7 +3201,7 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 				   u8 end_page, u8 *buf, void **ptr,
 				   unsigned int *offset)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	int send_blkend;
 	u8 val, data[16];
@@ -3221,8 +3222,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 		}
 		/* Block Address */
 		data[1] = 0;
-		data[2] = (u8) (old_blk >> 8);
-		data[3] = (u8) old_blk;
+		data[2] = (u8)(old_blk >> 8);
+		data[3] = (u8)old_blk;
 		data[4] = 0x80;
 		data[5] = 0;
 		data[6] = 0xEF;
@@ -3253,8 +3254,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (new_blk >> 8);
-	data[3] = (u8) new_blk;
+	data[2] = (u8)(new_blk >> 8);
+	data[3] = (u8)new_blk;
 	/* Page Number
 	 * Extra data access mode */
 	if (page_cnt == 1) {
@@ -3267,8 +3268,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 	data[5] = start_page;
 	data[6] = 0xF8;
 	data[7] = 0xFF;
-	data[8] = (u8) (log_blk >> 8);
-	data[9] = (u8) log_blk;
+	data[8] = (u8)(log_blk >> 8);
+	data[9] = (u8)log_blk;
 
 	for (i = 0x0A; i < 0x10; i++) {
 		/* ECC */
@@ -3292,7 +3293,7 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TRANS_CFG, WAIT_INT,
 		       NO_WAIT_INT);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_L, 0xFF,
-		       (u8) page_cnt);
+		       (u8)page_cnt);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_SECTOR_CNT_H, 0xFF, 0);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, MS_TPC, 0xFF, WRITE_PAGE_DATA);
 	rts51x_add_cmd(chip, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
@@ -3320,7 +3321,6 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 
 	retval = rts51x_get_rsp(chip, 3, 2000);
 
-
 	if (CHECK_MS_TRANS_FAIL(chip, retval)) {
 		rts51x_clear_ms_error(chip);
 		TRACE_RET(chip, STATUS_FAIL);
@@ -3335,7 +3335,7 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 				  u16 log_blk, u8 start_page, u8 end_page,
 				  u8 *buf, void **ptr, unsigned int *offset)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 extra[MS_EXTRA_SIZE], page_addr, val, trans_cfg, data[6];
 
@@ -3363,8 +3363,8 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (phy_blk >> 8);
-	data[3] = (u8) phy_blk;
+	data[2] = (u8)(phy_blk >> 8);
+	data[3] = (u8)phy_blk;
 	/* Page Number
 	 * Extra data access mode */
 	data[4] = 0;
@@ -3409,10 +3409,10 @@ static int ms_read_multiple_pages(struct rts51x_chip *chip, u16 phy_blk,
 					if (!(chip->card_wp & MS_CARD)) {
 						reset_ms(chip);
 						ms_set_page_status(log_blk,
-							setPS_NG, extra,
+								   setPS_NG, extra,
 							MS_EXTRA_SIZE);
 						ms_write_extra_data(chip,
-							phy_blk, page_addr,
+								    phy_blk, page_addr,
 							extra, MS_EXTRA_SIZE);
 					}
 					ms_set_err_code(chip,
@@ -3526,7 +3526,7 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 				   u8 end_page, u8 *buf, void **ptr,
 				   unsigned int *offset)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, i;
 	u8 page_addr, val, data[16];
 
@@ -3546,8 +3546,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 		}
 		/* Block Address */
 		data[1] = 0;
-		data[2] = (u8) (old_blk >> 8);
-		data[3] = (u8) old_blk;
+		data[2] = (u8)(old_blk >> 8);
+		data[3] = (u8)old_blk;
 		data[4] = 0x80;
 		data[5] = 0;
 		data[6] = 0xEF;
@@ -3587,8 +3587,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 	}
 	/* Block Address */
 	data[1] = 0;
-	data[2] = (u8) (new_blk >> 8);
-	data[3] = (u8) new_blk;
+	data[2] = (u8)(new_blk >> 8);
+	data[3] = (u8)new_blk;
 	/* Page Number
 	 * Extra data access mode */
 	if ((end_page - start_page) == 1) {
@@ -3601,8 +3601,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 	data[5] = start_page;
 	data[6] = 0xF8;
 	data[7] = 0xFF;
-	data[8] = (u8) (log_blk >> 8);
-	data[9] = (u8) log_blk;
+	data[8] = (u8)(log_blk >> 8);
+	data[9] = (u8)log_blk;
 
 	for (i = 0x0A; i < 0x10; i++) {
 		/* ECC */
@@ -3725,8 +3725,8 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 					TRACE_RET(chip, retval);
 			}
 
-			if ((page_addr == (end_page - 1))
-			    || (page_addr == ms_card->page_off)) {
+			if ((page_addr == (end_page - 1)) ||
+			    (page_addr == ms_card->page_off)) {
 				if (!(val & INT_REG_CED)) {
 					ms_set_err_code(chip,
 							MS_FLASH_WRITE_ERROR);
@@ -3743,7 +3743,7 @@ static int ms_write_multiple_pages(struct rts51x_chip *chip, u16 old_blk,
 static int ms_finish_write(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 			   u16 log_blk, u8 page_off)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval, seg_no;
 
 #ifdef MS_SPEEDUP
@@ -3796,8 +3796,8 @@ static int ms_prepare_write(struct rts51x_chip *chip, u16 old_blk, u16 new_blk,
 
 int rts51x_ms_delay_write(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
-	struct rts51x_ms_delay_write_tag *delay_write = &(ms_card->delay_write);
+	struct ms_info *ms_card = &chip->ms_card;
+	struct rts51x_ms_delay_write_tag *delay_write = &ms_card->delay_write;
 	int retval;
 
 	if (delay_write->delay_write_flag) {
@@ -3822,15 +3822,15 @@ static inline void rts51x_ms_rw_fail(struct scsi_cmnd *srb, struct rts51x_chip *
 {
 	if (srb->sc_data_direction == DMA_FROM_DEVICE)
 		rts51x_set_sense_type(chip, SCSI_LUN(srb),
-			       SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
+				      SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
 	else
 		rts51x_set_sense_type(chip, SCSI_LUN(srb), SENSE_TYPE_MEDIA_WRITE_ERR);
 }
 
 static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *chip,
-			      u32 start_sector, u16 sector_cnt)
+				     u32 start_sector, u16 sector_cnt)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	unsigned int lun = SCSI_LUN(srb);
 	int retval, seg_no;
 	unsigned int offset = 0;
@@ -3838,13 +3838,13 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 	u8 start_page, end_page = 0, page_cnt;
 	u8 *buf;
 	void *ptr = NULL;
-	struct rts51x_ms_delay_write_tag *delay_write = &(ms_card->delay_write);
+	struct rts51x_ms_delay_write_tag *delay_write = &ms_card->delay_write;
 
 	ms_set_err_code(chip, MS_NO_ERROR);
 
 	ms_card->counter = 0;
 
-	buf = (u8 *) scsi_sglist(srb);
+	buf = (u8 *)scsi_sglist(srb);
 
 	retval = ms_switch_clock(chip);
 	if (retval != STATUS_SUCCESS) {
@@ -3852,8 +3852,8 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 		TRACE_RET(chip, retval);
 	}
 
-	log_blk = (u16) (start_sector >> ms_card->block_shift);
-	start_page = (u8) (start_sector & ms_card->page_off);
+	log_blk = (u16)(start_sector >> ms_card->block_shift);
+	start_page = (u8)(start_sector & ms_card->page_off);
 
 	for (seg_no = 0; seg_no < ARRAY_SIZE(ms_start_idx) - 1; seg_no++) {
 		if (log_blk < ms_start_idx[seg_no + 1])
@@ -3890,7 +3890,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 #endif
 			if (retval != STATUS_SUCCESS) {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_WRITE_ERR);
+						      SENSE_TYPE_MEDIA_WRITE_ERR);
 				TRACE_RET(chip, retval);
 			}
 			old_blk = delay_write->old_phyblock;
@@ -3905,7 +3905,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 			retval = rts51x_ms_delay_write(chip);
 			if (retval != STATUS_SUCCESS) {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_WRITE_ERR);
+						      SENSE_TYPE_MEDIA_WRITE_ERR);
 				TRACE_RET(chip, retval);
 			}
 			old_blk =
@@ -3914,7 +3914,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 			new_blk = ms_get_unused_block(chip, seg_no);
 			if ((old_blk == 0xFFFF) || (new_blk == 0xFFFF)) {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_WRITE_ERR);
+						      SENSE_TYPE_MEDIA_WRITE_ERR);
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
@@ -3925,12 +3925,12 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 				if (monitor_card_cd(chip, MS_CARD) ==
 				    CD_NOT_EXIST) {
 					rts51x_set_sense_type(chip, lun,
-						SENSE_TYPE_MEDIA_NOT_PRESENT);
+							      SENSE_TYPE_MEDIA_NOT_PRESENT);
 					TRACE_RET(chip, STATUS_FAIL);
 				}
 
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_WRITE_ERR);
+						      SENSE_TYPE_MEDIA_WRITE_ERR);
 				TRACE_RET(chip, retval);
 			}
 		}
@@ -3939,12 +3939,12 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 		if (retval != STATUS_SUCCESS) {
 			if (monitor_card_cd(chip, MS_CARD) == CD_NOT_EXIST) {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_NOT_PRESENT);
+						      SENSE_TYPE_MEDIA_NOT_PRESENT);
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
 			rts51x_set_sense_type(chip, lun,
-				       SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
+					      SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
 			TRACE_RET(chip, retval);
 		}
 		old_blk =
@@ -3952,23 +3952,23 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 				   log_blk - ms_start_idx[seg_no]);
 		if (old_blk == 0xFFFF) {
 			rts51x_set_sense_type(chip, lun,
-				       SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
+					      SENSE_TYPE_MEDIA_UNRECOVER_READ_ERR);
 			TRACE_RET(chip, STATUS_FAIL);
 		}
 	}
 
 	RTS51X_DEBUGP("seg_no = %d, old_blk = 0x%x, new_blk = 0x%x\n", seg_no,
-		       old_blk, new_blk);
+		      old_blk, new_blk);
 
 	while (total_sec_cnt) {
 		if ((start_page + total_sec_cnt) > (ms_card->page_off + 1))
 			end_page = ms_card->page_off + 1;
 		else
-			end_page = start_page + (u8) total_sec_cnt;
+			end_page = start_page + (u8)total_sec_cnt;
 		page_cnt = end_page - start_page;
 
 		RTS51X_DEBUGP("start_page = %d, end_page = %d, page_cnt = %d\n",
-					start_page, end_page, page_cnt);
+			      start_page, end_page, page_cnt);
 
 		if (srb->sc_data_direction == DMA_FROM_DEVICE)
 			retval = ms_read_multiple_pages(chip,
@@ -3984,7 +3984,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 		if (retval != STATUS_SUCCESS) {
 			if (monitor_card_cd(chip, MS_CARD) == CD_NOT_EXIST) {
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_NOT_PRESENT);
+						      SENSE_TYPE_MEDIA_NOT_PRESENT);
 				TRACE_RET(chip, STATUS_FAIL);
 			}
 
@@ -4021,7 +4021,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 			if (retval != STATUS_SUCCESS) {
 				chip->card_fail |= MS_CARD;
 				rts51x_set_sense_type(chip, lun,
-					       SENSE_TYPE_MEDIA_NOT_PRESENT);
+						      SENSE_TYPE_MEDIA_NOT_PRESENT);
 				TRACE_RET(chip, retval);
 			}
 		}
@@ -4043,7 +4043,7 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 		}
 
 		RTS51X_DEBUGP("seg_no = %d, old_blk = 0x%x, new_blk = 0x%x\n",
-			       seg_no, old_blk, new_blk);
+			      seg_no, old_blk, new_blk);
 
 		start_page = 0;
 	}
@@ -4064,9 +4064,9 @@ static int rts51x_ms_rw_multi_sector(struct scsi_cmnd *srb, struct rts51x_chip *
 }
 
 int rts51x_ms_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sector,
-	  u16 sector_cnt)
+		 u16 sector_cnt)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	if (CHK_MSPRO(ms_card))
@@ -4081,16 +4081,16 @@ int rts51x_ms_rw(struct scsi_cmnd *srb, struct rts51x_chip *chip, u32 start_sect
 
 void rts51x_ms_free_l2p_tbl(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int i = 0;
 
-	if (ms_card->segment != NULL) {
+	if (ms_card->segment) {
 		for (i = 0; i < ms_card->segment_cnt; i++) {
-			if (ms_card->segment[i].l2p_table != NULL) {
+			if (ms_card->segment[i].l2p_table) {
 				vfree(ms_card->segment[i].l2p_table);
 				ms_card->segment[i].l2p_table = NULL;
 			}
-			if (ms_card->segment[i].free_table != NULL) {
+			if (ms_card->segment[i].free_table) {
 				vfree(ms_card->segment[i].free_table);
 				ms_card->segment[i].free_table = NULL;
 			}
@@ -4102,7 +4102,7 @@ void rts51x_ms_free_l2p_tbl(struct rts51x_chip *chip)
 
 void rts51x_ms_cleanup_work(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 
 	if (CHK_MSPRO(ms_card)) {
 		if (ms_card->seq_mode) {
@@ -4112,13 +4112,14 @@ void rts51x_ms_cleanup_work(struct rts51x_chip *chip)
 		}
 		if (CHK_MSHG(ms_card)) {
 			u8 value;
+
 			rts51x_read_register(chip, MS_CFG, &value);
 			if (value & MS_2K_SECTOR_MODE)
 				rts51x_write_register(chip, MS_CFG,
 						      MS_2K_SECTOR_MODE, 0x00);
 		}
-	} else if ((!CHK_MSPRO(ms_card))
-		   && ms_card->delay_write.delay_write_flag) {
+	} else if ((!CHK_MSPRO(ms_card)) &&
+		   ms_card->delay_write.delay_write_flag) {
 		RTS51X_DEBUGP("MS: delay write\n");
 		rts51x_ms_delay_write(chip);
 		ms_card->counter = 0;
@@ -4153,7 +4154,7 @@ static int ms_power_off_card3v3(struct rts51x_chip *chip)
 
 int rts51x_release_ms_card(struct rts51x_chip *chip)
 {
-	struct ms_info *ms_card = &(chip->ms_card);
+	struct ms_info *ms_card = &chip->ms_card;
 	int retval;
 
 	RTS51X_DEBUGP("rts51x_release_ms_card\n");
